@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import Foundation
 import Quartz
 import WebKit
 
@@ -46,12 +47,24 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         let languageIdentifier = UTIMapper.languageIdentifier(for: contentType)
         let typeIdentifier = contentType?.identifier ?? "unknown"
 
-        await MainActor.run {
-            loadPreviewHTML(
-                fileName: url.lastPathComponent,
-                typeIdentifier: typeIdentifier,
-                languageIdentifier: languageIdentifier
-            )
+        do {
+            let preview = try PreviewFileLoader.loadPreview(for: url)
+            let themeSnapshot = loadThemeSnapshot()
+
+            await MainActor.run {
+                loadPreviewHTML(
+                    fileName: url.lastPathComponent,
+                    typeIdentifier: typeIdentifier,
+                    languageIdentifier: languageIdentifier,
+                    preview: preview,
+                    lightTheme: themeSnapshot.lightTheme,
+                    darkTheme: themeSnapshot.darkTheme
+                )
+            }
+        } catch {
+            await MainActor.run {
+                loadStateHTML(title: url.lastPathComponent, body: error.localizedDescription)
+            }
         }
     }
 
@@ -89,12 +102,6 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
                 border-color: rgba(152, 166, 184, 0.18);
                 box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
               }
-              .meta {
-                color: #9fb0c3;
-              }
-              code {
-                background: rgba(148, 163, 184, 0.14);
-              }
             }
             .card {
               width: min(680px, calc(100vw - 48px));
@@ -115,17 +122,6 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
               font-size: 15px;
               line-height: 1.6;
             }
-            .meta {
-              margin-top: 18px;
-              font-size: 13px;
-              color: #52606d;
-            }
-            code {
-              padding: 2px 8px;
-              border-radius: 999px;
-              background: rgba(15, 23, 42, 0.06);
-              font-family: "SF Mono", "Menlo", monospace;
-            }
           </style>
         </head>
         <body>
@@ -140,7 +136,18 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         webView.loadHTMLString(html, baseURL: nil)
     }
 
-    private func loadPreviewHTML(fileName: String, typeIdentifier: String, languageIdentifier: String) {
+    private func loadPreviewHTML(
+        fileName: String,
+        typeIdentifier: String,
+        languageIdentifier: String,
+        preview: PreviewFileLoadResult,
+        lightTheme: String,
+        darkTheme: String
+    ) {
+        let truncationNotice = preview.didTruncate
+            ? "<div class=\"notice\">Preview truncated to the first 500 KB.</div>"
+            : ""
+
         let html = """
         <!doctype html>
         <html lang="en">
@@ -181,12 +188,15 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
               .meta {
                 color: #9db0c4;
               }
+              pre {
+                background: rgba(148, 163, 184, 0.14);
+              }
               code {
                 background: rgba(148, 163, 184, 0.16);
               }
             }
             .card {
-              width: min(760px, calc(100vw - 48px));
+              width: min(820px, calc(100vw - 48px));
               padding: 30px 32px;
               border-radius: 24px;
               background: rgba(255, 255, 255, 0.9);
@@ -213,6 +223,26 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
               font-size: 15px;
               line-height: 1.7;
             }
+            .notice {
+              margin-top: 18px;
+              padding: 12px 14px;
+              border-radius: 14px;
+              background: rgba(54, 98, 216, 0.1);
+              font-size: 13px;
+              font-weight: 600;
+            }
+            pre {
+              margin: 22px 0 0;
+              padding: 18px;
+              border-radius: 18px;
+              background: rgba(15, 23, 42, 0.06);
+              font-family: "SF Mono", "Menlo", monospace;
+              font-size: 13px;
+              line-height: 1.65;
+              overflow: auto;
+              white-space: pre-wrap;
+              word-break: break-word;
+            }
             .meta {
               margin-top: 20px;
               font-size: 13px;
@@ -229,16 +259,25 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         </head>
         <body>
           <article class="card">
-            <div class="eyebrow">Phase 1.2 / 1.3</div>
+            <div class="eyebrow">Phase 1.4 / 1.5</div>
             <h1>\(escapeHTML(fileName))</h1>
-            <p>Phase 1 scaffold is active. <code>WKWebView</code> layout is live and the UTI mapping layer resolved this file to <code>\(escapeHTML(languageIdentifier))</code>.</p>
-            <div class="meta">File: <code>\(escapeHTML(fileName))</code><br>UTType: <code>\(escapeHTML(typeIdentifier))</code></div>
+            <p>Phase 1 file loading is active. FreeLook decoded this preview as <code>\(escapeHTML(preview.encodingName))</code> and resolved the file type to <code>\(escapeHTML(languageIdentifier))</code>.</p>
+            \(truncationNotice)
+            <pre>\(escapeHTML(preview.content))</pre>
+            <div class="meta">File: <code>\(escapeHTML(fileName))</code><br>UTType: <code>\(escapeHTML(typeIdentifier))</code><br>Light Theme: <code>\(escapeHTML(lightTheme))</code><br>Dark Theme: <code>\(escapeHTML(darkTheme))</code><br>Truncated: <code>\(preview.didTruncate ? "yes (first 500 KB)" : "no")</code></div>
           </article>
         </body>
         </html>
         """
 
         webView.loadHTMLString(html, baseURL: nil)
+    }
+
+    private func loadThemeSnapshot() -> (lightTheme: String, darkTheme: String) {
+        let defaults = UserDefaults(suiteName: "group.net.paradigmx.FreeLook") ?? .standard
+        let lightTheme = defaults.string(forKey: "lightTheme") ?? "GitHub Light"
+        let darkTheme = defaults.string(forKey: "darkTheme") ?? "GitHub Dark"
+        return (lightTheme, darkTheme)
     }
 
     private func escapeHTML(_ value: String) -> String {

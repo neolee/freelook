@@ -63,8 +63,8 @@ Shiki's dual-theme CSS variable mechanism handles automatic `prefers-color-schem
 
 ### Bundled Themes
 
-Light: GitHub Light, One Light, Catppuccin Latte, Nord Light, Solarized Light
-Dark: GitHub Dark, One Dark Pro, Catppuccin Mocha, Nord, Dracula
+Light: GitHub Light, One Light, Catppuccin Latte, Nord Light
+Dark: GitHub Dark, One Dark Pro, Catppuccin Mocha, Nord
 
 ---
 

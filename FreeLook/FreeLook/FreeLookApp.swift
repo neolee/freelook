@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct FreeLookApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @StateObject private var settingsStore = SettingsStore.shared
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(settingsStore: settingsStore)
         }
     }
 }
