@@ -1,6 +1,6 @@
-# Mercury Release Workflow
+# FreeLook Release Workflow
 #
-# Triggered by a semver tag push (e.g. v0.9.0).
+# Triggered by a semver tag push (e.g. v1.0.0).
 # Builds a signed, notarized Developer ID DMG, updates appcast.xml,
 # commits it back to main [skip ci], and creates a GitHub Release
 # with the DMG attached.
@@ -60,10 +60,10 @@ jobs:
       - name: Build and Archive
         run: |
           xcodebuild archive \
-            -project Mercury/Mercury.xcodeproj \
-            -scheme Mercury \
+            -project FreeLook/FreeLook.xcodeproj \
+            -scheme FreeLook \
             -configuration Release \
-            -archivePath build/Mercury.xcarchive \
+            -archivePath build/FreeLook.xcarchive \
             -destination "generic/platform=macOS" \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Developer ID Application" \
@@ -73,7 +73,7 @@ jobs:
       - name: Export App
         run: |
           xcodebuild -exportArchive \
-            -archivePath build/Mercury.xcarchive \
+            -archivePath build/FreeLook.xcarchive \
             -exportOptionsPlist exportOptions.plist \
             -exportPath build/Export
 
@@ -83,8 +83,8 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
-          ditto -c -k --keepParent build/Export/Mercury.app build/Mercury.zip
-          xcrun notarytool submit build/Mercury.zip \
+          ditto -c -k --keepParent build/Export/FreeLook.app build/FreeLook.zip
+          xcrun notarytool submit build/FreeLook.zip \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_PASSWORD" \
             --team-id "$TEAM_ID" \
@@ -95,7 +95,7 @@ jobs:
           # Extract submission ID and check status
           SUBMISSION_ID=$(grep "id:" notary_result.txt | awk '{print $2}')
           if grep -q "status: Accepted" notary_result.txt; then
-            echo "Notarization successful!"
+            echo "Notarization successful."
           else
             echo "Notarization failed. Fetching logs..."
             xcrun notarytool log "$SUBMISSION_ID" \
@@ -107,21 +107,21 @@ jobs:
 
       - name: Staple App
         run: |
-          xcrun stapler staple build/Export/Mercury.app
+          xcrun stapler staple build/Export/FreeLook.app
 
       - name: Create DMG
         run: |
           brew install create-dmg
           create-dmg \
-            --volname "Mercury" \
+            --volname "FreeLook" \
             --window-pos 200 120 \
             --window-size 800 400 \
             --icon-size 100 \
-            --icon "Mercury.app" 200 190 \
-            --hide-extension "Mercury.app" \
+            --icon "FreeLook.app" 200 190 \
+            --hide-extension "FreeLook.app" \
             --app-drop-link 600 185 \
-            "Mercury.dmg" \
-            "build/Export/Mercury.app"
+            "FreeLook.dmg" \
+            "build/Export/FreeLook.app"
 
       - name: Cache Sparkle Tools
         id: cache-sparkle
@@ -143,8 +143,8 @@ jobs:
           GENERATE_APPCAST=$(find /tmp/sparkle-tools -name "generate_appcast" | head -1)
           echo "${{ secrets.SPARKLE_PRIVATE_KEY }}" | "$GENERATE_APPCAST" \
             --ed-key-file - \
-            --link "https://github.com/neolee/mercury" \
-            --download-url-prefix "https://github.com/neolee/mercury/releases/download/${{ github.ref_name }}/" \
+            --link "https://github.com/neolee/freelook" \
+            --download-url-prefix "https://github.com/neolee/freelook/releases/download/${{ github.ref_name }}/" \
             .
 
       - name: Commit and Push appcast.xml
@@ -159,6 +159,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            Mercury.dmg
+            FreeLook.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

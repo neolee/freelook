@@ -1,19 +1,33 @@
 # FreeLook — Agent Engineering Notes
 
-Reference for AI coding agents working on this codebase. Keep this file concise, prescriptive, and focused on repository-wide rules.
+Reference for AI coding agents working on this codebase. Keep this file concise,
+prescriptive, and focused on repository-wide rules.
 
 ---
 
 ## 1. Communication and Documentation
 
 - Communicate with the user in Chinese.
-- Write code comments and repository documentation in English unless explicitly requested otherwise.
+- Write code comments and repository documentation in English unless explicitly
+  requested otherwise.
 - Do not use emojis in code comments or documentation.
 - Use backticks for code references in Markdown.
 
 ---
 
 ## 2. Core Stack and Naming
+
+- Language: Swift + SwiftUI; minimum deployment target macOS 14 Sonoma.
+- Xcode project: `FreeLook/FreeLook.xcodeproj`.
+- Two targets: `FreeLook` (host app) and `QuickLookExtension` (QL Preview Extension).
+- App Groups identifier shared by both targets: `group.net.paradigmx.FreeLook`.
+- JS renderer sub-project: `WebRenderer/` (npm + esbuild). It is **not** part of the Xcode build; run it separately when changing `renderer.js`. The built artifact `bundle.js` lives at `QuickLookExtension/Resources/bundle.js`.
+- Syntax highlighting: Shiki v1.x with `createJavaScriptRegexEngine()` — no WASM.
+- Markdown: markdown-it + @shikijs/markdown-it plugin.
+- JSON pretty-printing: native `JSON.stringify(JSON.parse(src), null, 2)` piped into Shiki with `lang: 'json'`.
+- XML pretty-printing: xml-formatter piped into Shiki with `lang: 'xml'`.
+- User theme preferences stored in App Group `UserDefaults` under keys `lightTheme` and `darkTheme`.
+- Do not add new Xcode targets without discussing with the user first.
 
 ---
 
@@ -25,15 +39,34 @@ Run from repo root:
 ./scripts/build
 ```
 
-- Do not pipe or post-process `./scripts/build` output.
+- Do not pipe or post-process build output.
 - Keep the build free of compiler errors and warnings.
 - If tooling returns empty or missing output, stop and ask the user to verify manually.
+- To rebuild `bundle.js` after changing `WebRenderer/src/renderer.js`:
+  ```shell
+  cd WebRenderer && npm run build
+  ```
+  Then copy the output into `QuickLookExtension/Resources/bundle.js`.
 
 ---
 
 ## 4. Localization Rules
 
+- The app UI is English-only; no formal localization (`Localizable.strings`) is needed.
+- Do not wrap strings in `NSLocalizedString` speculatively.
+- Theme names are display strings defined in `SettingsStore.swift`; they are not
+  localized.
+
 ---
 
 ## 5. Testing Rules
 
+- Unit tests live in the `Tests` target.
+- The test file will be renamed to `UTIMapperTests.swift` when `UTIMapper.swift` is
+  implemented. It must cover at least one representative `UTType` for each category:
+  Markdown, JSON, XML, Swift, Python, JavaScript, shell script, and generic source
+  code (should map to a valid Shiki lang string or `"text"`).
+- After any change to `UTIMapper.swift`, run the unit tests locally.
+- Rendering pipeline correctness is verified manually: open a representative file of
+  each supported type via Quick Look and confirm the output looks correct.
+- Do not add snapshot tests or UI tests without discussing with the user first.

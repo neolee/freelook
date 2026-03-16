@@ -2,8 +2,8 @@
 set -euo pipefail
 
 REPO_DIR=$(cd "$(dirname "$0")/.." && pwd)
-PROJECT_PATH="$REPO_DIR/Mercury/Mercury.xcodeproj"
-SCHEME="Mercury"
+PROJECT_PATH="$REPO_DIR/FreeLook/FreeLook.xcodeproj"
+SCHEME="FreeLook"
 CONFIGURATION="Debug"
 
 xcodebuild \
