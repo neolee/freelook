@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		B5A7CCAC2F680BA200988F0A /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5A7CCAB2F680BA200988F0A /* Quartz.framework */; };
 		B5A7CCB82F680BA200988F0A /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B5A7CCA92F680BA100988F0A /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B5A7CCCE2F68111100988F0A /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5A7CCCD2F68111100988F0A /* AppIntents.framework */; };
+		B5A7CCCF2F68111100988F0A /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5A7CCCD2F68111100988F0A /* AppIntents.framework */; };
+		B5A7CCD02F68111100988F0A /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5A7CCCD2F68111100988F0A /* AppIntents.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +50,7 @@
 		B5A7CCA92F680BA100988F0A /* QuickLookExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuickLookExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5A7CCAB2F680BA200988F0A /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		B5A7CCC22F680BF500988F0A /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5A7CCCD2F68111100988F0A /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -85,6 +89,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5A7CCCE2F68111100988F0A /* AppIntents.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +97,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5A7CCCF2F68111100988F0A /* AppIntents.framework in Frameworks */,
 				B5A7CCAC2F680BA200988F0A /* Quartz.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -100,6 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5A7CCD02F68111100988F0A /* AppIntents.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,6 +137,7 @@
 		B5A7CCAA2F680BA200988F0A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B5A7CCCD2F68111100988F0A /* AppIntents.framework */,
 				B5A7CCAB2F680BA200988F0A /* Quartz.framework */,
 			);
 			name = Frameworks;
@@ -369,7 +377,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -427,7 +435,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -450,11 +458,13 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FreeLook;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.paradigmx.FreeLook;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -483,11 +493,13 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FreeLook;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.paradigmx.FreeLook;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -520,6 +532,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.paradigmx.FreeLook.QuickLookExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -552,6 +565,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.paradigmx.FreeLook.QuickLookExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -573,6 +587,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = S2D42Y29YT;
 				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.paradigmx.FreeLook.Tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -593,6 +608,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = S2D42Y29YT;
 				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.paradigmx.FreeLook.Tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -17,7 +17,7 @@ prescriptive, and focused on repository-wide rules.
 
 ## 2. Core Stack and Naming
 
-- Language: Swift + SwiftUI; minimum deployment target macOS 14 Sonoma.
+- Language: Swift + SwiftUI; minimum deployment target macOS 14.6 Sonoma.
 - Xcode project: `FreeLook/FreeLook.xcodeproj`.
 - Two targets: `FreeLook` (host app) and `QuickLookExtension` (QL Preview Extension).
 - App Groups identifier shared by both targets: `group.net.paradigmx.FreeLook`.
@@ -41,6 +41,14 @@ Run from repo root:
 
 - Do not pipe or post-process build output.
 - Keep the build free of compiler errors and warnings.
+- Treat each implementation step as a gated checkpoint that must be independently
+  verifiable.
+- Before moving to the next implementation step, run `./scripts/build` and all
+  existing unit tests locally; both must finish with no errors and no warnings.
+- After completing a step, stop and wait for the user to verify the result and
+  create a version-control baseline before continuing to the next step.
+- If a step cannot satisfy the build/test/user-baseline gate, do not continue to
+  the next planned step.
 - If tooling returns empty or missing output, stop and ask the user to verify manually.
 - To rebuild `bundle.js` after changing `WebRenderer/src/renderer.js`:
   ```shell
@@ -62,6 +70,8 @@ Run from repo root:
 ## 5. Testing Rules
 
 - Unit tests live in the `Tests` target.
+- Run the full unit test suite after every implementation step, even if the step
+  does not introduce new tests.
 - The test file will be renamed to `UTIMapperTests.swift` when `UTIMapper.swift` is
   implemented. It must cover at least one representative `UTType` for each category:
   Markdown, JSON, XML, Swift, Python, JavaScript, shell script, and generic source
