@@ -12,6 +12,7 @@
 		B5A7CCCE2F68111100988F0A /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5A7CCCD2F68111100988F0A /* AppIntents.framework */; };
 		B5A7CCCF2F68111100988F0A /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5A7CCCD2F68111100988F0A /* AppIntents.framework */; };
 		B5A7CCD02F68111100988F0A /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5A7CCCD2F68111100988F0A /* AppIntents.framework */; };
+		B5A7CCD12F68111200988F0A /* QuickLookExtension/UTIMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A7CCD22F68111200988F0A /* QuickLookExtension/UTIMapper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		B5A7CCAB2F680BA200988F0A /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		B5A7CCC22F680BF500988F0A /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5A7CCCD2F68111100988F0A /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
+		B5A7CCD22F68111200988F0A /* QuickLookExtension/UTIMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookExtension/UTIMapper.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -121,6 +123,7 @@
 				B5A7CCC32F680BF500988F0A /* Tests */,
 				B5A7CCAA2F680BA200988F0A /* Frameworks */,
 				B5A7CC982F680B2A00988F0A /* Products */,
+				B5A7CD0A2F6820B400988F0A /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -141,6 +144,14 @@
 				B5A7CCAB2F680BA200988F0A /* Quartz.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B5A7CD0A2F6820B400988F0A /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				B5A7CCD22F68111200988F0A /* QuickLookExtension/UTIMapper.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -304,6 +315,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5A7CCD12F68111200988F0A /* QuickLookExtension/UTIMapper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

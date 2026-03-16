@@ -1,0 +1,12 @@
+#!/bin/zsh
+set -euo pipefail
+
+REPO_DIR=$(cd "$(dirname "$0")/.." && pwd)
+PROJECT_PATH="$REPO_DIR/FreeLook/FreeLook.xcodeproj"
+SCHEME="FreeLook"
+
+xcodebuild \
+  -project "$PROJECT_PATH" \
+  -scheme "$SCHEME" \
+  -destination "platform=macOS,arch=arm64" \
+  test

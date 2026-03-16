@@ -9,7 +9,20 @@
 			<key>QLIsDataBasedPreview</key>
 			<false/>
 			<key>QLSupportedContentTypes</key>
-			<array/>
+			<array>
+				<string>public.source-code</string>
+				<string>public.swift-source</string>
+				<string>public.python-script</string>
+				<string>com.netscape.javascript-source</string>
+				<string>public.typescript-source</string>
+				<string>public.css</string>
+				<string>public.html</string>
+				<string>public.shell-script</string>
+				<string>public.ruby-script</string>
+				<string>net.daringfireball.markdown</string>
+				<string>public.json</string>
+				<string>public.xml</string>
+			</array>
 			<key>QLSupportsSearchableItems</key>
 			<false/>
 		</dict>
