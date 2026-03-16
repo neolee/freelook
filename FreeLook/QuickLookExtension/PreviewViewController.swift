@@ -38,7 +38,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadStateHTML(title: "FreeLook", body: "Programmatic preview container is ready.")
+        loadStateHTML(title: "FreeLook", body: "Loading preview...")
     }
 
     func preparePreviewOfFile(at url: URL) async throws {
@@ -259,9 +259,9 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         </head>
         <body>
           <article class="card">
-            <div class="eyebrow">Phase 1.4 / 1.5</div>
+            <div class="eyebrow">FreeLook Preview</div>
             <h1>\(escapeHTML(fileName))</h1>
-            <p>Phase 1 file loading is active. FreeLook decoded this preview as <code>\(escapeHTML(preview.encodingName))</code> and resolved the file type to <code>\(escapeHTML(languageIdentifier))</code>.</p>
+            <p>FreeLook decoded this preview as <code>\(escapeHTML(preview.encodingName))</code> and resolved the file type to <code>\(escapeHTML(languageIdentifier))</code>.</p>
             \(truncationNotice)
             <pre>\(escapeHTML(preview.content))</pre>
             <div class="meta">File: <code>\(escapeHTML(fileName))</code><br>UTType: <code>\(escapeHTML(typeIdentifier))</code><br>Light Theme: <code>\(escapeHTML(lightTheme))</code><br>Dark Theme: <code>\(escapeHTML(darkTheme))</code><br>Truncated: <code>\(preview.didTruncate ? "yes (first 500 KB)" : "no")</code></div>
@@ -274,9 +274,9 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     private func loadThemeSnapshot() -> (lightTheme: String, darkTheme: String) {
-        let defaults = UserDefaults(suiteName: "group.net.paradigmx.FreeLook") ?? .standard
-        let lightTheme = defaults.string(forKey: "lightTheme") ?? "GitHub Light"
-        let darkTheme = defaults.string(forKey: "darkTheme") ?? "GitHub Dark"
+        let defaults = SharedPreviewSettings.userDefaults()
+        let lightTheme = defaults.string(forKey: SharedPreviewSettings.lightThemeKey) ?? SharedPreviewSettings.defaultLightTheme
+        let darkTheme = defaults.string(forKey: SharedPreviewSettings.darkThemeKey) ?? SharedPreviewSettings.defaultDarkTheme
         return (lightTheme, darkTheme)
     }
 

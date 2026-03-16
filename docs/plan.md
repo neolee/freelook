@@ -106,15 +106,17 @@ Required setup:
 [repo root]/
 ├── FreeLook/                          Xcode project root
 │   ├── FreeLook/                      host app source
-│   │   ├── FreeLookApp.swift          app entry, Sparkle updater setup
-│   │   ├── ContentView.swift          minimal main window
-│   │   ├── SettingsView.swift         light/dark theme pickers + live preview (to be added)
-│   │   ├── SettingsStore.swift        ObservableObject, App Group UserDefaults (to be added)
+│   │   ├── FreeLookApp.swift          app entry
+│   │   ├── AppDelegate.swift          close-last-window termination hook
+│   │   ├── ContentView.swift          minimal settings window
+│   │   ├── SettingsStore.swift        ObservableObject, App Group UserDefaults
 │   │   ├── Assets.xcassets/
 │   │   └── FreeLook.entitlements
 │   ├── QuickLookExtension/
-│   │   ├── PreviewViewController.swift  (nib-based stub; WKWebView impl to come)
-│   │   ├── UTIMapper.swift              (to be added)
+│   │   ├── PreviewViewController.swift  WKWebView preview shell
+│   │   ├── PreviewFileLoader.swift      bounded file loading + decoding
+│   │   ├── SharedPreviewSettings.swift  shared App Group keys/defaults
+│   │   ├── UTIMapper.swift              UTType -> renderer language mapping
 │   │   ├── Info.plist
 │   │   ├── QuickLookExtension.entitlements
 │   │   └── Resources/
@@ -122,7 +124,9 @@ Required setup:
 │   │       ├── bundle.js                built artifact from WebRenderer/
 │   │       └── styles.css               (to be added)
 │   ├── Tests/
-│   │   └── Tests.swift                  (to be renamed UTIMapperTests.swift)
+│   │   ├── UTIMapperTests.swift
+│   │   ├── PreviewFileLoaderTests.swift
+│   │   └── SettingsStoreTests.swift
 │   └── FreeLook.xcodeproj
 ├── WebRenderer/                       JS sub-project (to be created)
 │   ├── src/
@@ -160,7 +164,7 @@ The original phase boundaries are still correct, but several items were too larg
 
 1.3 `UTI` mapping and tests
 - Implement `UTIMapper.swift` with `UTType` → `Shiki` language mappings.
-- Rename `Tests/Tests.swift` to `Tests/UTIMapperTests.swift` and add representative coverage for Markdown, JSON, XML, Swift, Python, JavaScript, shell script, and generic source code.
+- Keep `Tests/UTIMapperTests.swift` aligned with the supported mapping surface and add representative coverage for Markdown, JSON, XML, Swift, Python, JavaScript, shell script, and generic source code.
 - Verification gate: clean build; full unit test suite; user confirms the tested mapping surface is sufficient before moving on.
 
 1.4 Bounded file loading

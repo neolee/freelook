@@ -42,6 +42,19 @@ struct PreviewFileLoaderTests {
         #expect(result.content.hasPrefix("aaaa"))
     }
 
+    @Test func preservesUTF8WhenTruncationSplitsAMultibyteCharacter() throws {
+        let source = String(repeating: "€", count: (PreviewFileLoader.maximumPreviewBytes / 3) + 1)
+        let data = try #require(source.data(using: .utf8))
+        let url = try temporaryFile(named: "oversized-utf8.txt", data: data)
+
+        let result = try PreviewFileLoader.loadPreview(for: url)
+
+        #expect(result.didTruncate == true)
+        #expect(result.encodingName == "UTF-8")
+        #expect(result.content.utf8.count <= PreviewFileLoader.maximumPreviewBytes)
+        #expect(result.content == String(repeating: "€", count: PreviewFileLoader.maximumPreviewBytes / 3))
+    }
+
     @Test func throwsForMissingFiles() {
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
 

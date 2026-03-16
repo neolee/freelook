@@ -48,9 +48,13 @@ enum PreviewFileLoader {
         }
 
         let didTruncate = rawData.count > maximumPreviewBytes
-        let previewData = didTruncate ? rawData.prefix(maximumPreviewBytes) : rawData[...]
+        let previewData = Data(didTruncate ? rawData.prefix(maximumPreviewBytes) : rawData)
 
         if let content = String(data: previewData, encoding: .utf8) {
+            return PreviewFileLoadResult(content: content, didTruncate: didTruncate, encodingName: "UTF-8")
+        }
+
+        if didTruncate, let content = utf8ContentDroppingIncompleteTail(from: previewData) {
             return PreviewFileLoadResult(content: content, didTruncate: didTruncate, encodingName: "UTF-8")
         }
 
@@ -59,5 +63,23 @@ enum PreviewFileLoader {
         }
 
         throw PreviewFileLoaderError.unsupportedEncoding
+    }
+
+    private static func utf8ContentDroppingIncompleteTail(from data: Data) -> String? {
+        guard data.count > 1 else {
+            return nil
+        }
+
+        let tailLimit = min(3, data.count - 1)
+
+        for droppedByteCount in 1...tailLimit {
+            let candidate = data.dropLast(droppedByteCount)
+
+            if let content = String(data: candidate, encoding: .utf8) {
+                return content
+            }
+        }
+
+        return nil
     }
 }

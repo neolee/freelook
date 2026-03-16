@@ -10,10 +10,10 @@ import Foundation
 
 final class SettingsStore: ObservableObject {
     static let shared = SettingsStore()
-    static let appGroupSuiteName = "group.net.paradigmx.FreeLook"
-    static let lightThemeKey = "lightTheme"
-    static let darkThemeKey = "darkTheme"
-    static let quitAfterLastWindowClosedKey = "quitAfterLastWindowClosed"
+    static let appGroupSuiteName = SharedPreviewSettings.appGroupSuiteName
+    static let lightThemeKey = SharedPreviewSettings.lightThemeKey
+    static let darkThemeKey = SharedPreviewSettings.darkThemeKey
+    static let quitAfterLastWindowClosedKey = SharedPreviewSettings.quitAfterLastWindowClosedKey
 
     static let lightThemeOptions = [
         "GitHub Light",
@@ -29,9 +29,9 @@ final class SettingsStore: ObservableObject {
         "Nord",
     ]
 
-    static let defaultLightTheme = lightThemeOptions[0]
-    static let defaultDarkTheme = darkThemeOptions[0]
-    static let defaultQuitAfterLastWindowClosed = false
+    static let defaultLightTheme = SharedPreviewSettings.defaultLightTheme
+    static let defaultDarkTheme = SharedPreviewSettings.defaultDarkTheme
+    static let defaultQuitAfterLastWindowClosed = SharedPreviewSettings.defaultQuitAfterLastWindowClosed
 
     @Published var lightTheme: String {
         didSet {
@@ -126,6 +126,6 @@ final class SettingsStore: ObservableObject {
     }
 
     private static func defaultUserDefaults() -> UserDefaults {
-        UserDefaults(suiteName: appGroupSuiteName) ?? .standard
+        SharedPreviewSettings.userDefaults()
     }
 }

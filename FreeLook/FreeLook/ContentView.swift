@@ -15,7 +15,7 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("FreeLook")
                     .font(.system(size: 28, weight: .semibold))
-                Text("Phase 1.5 persistence scaffold")
+                Text("Preview preferences")
                     .foregroundStyle(.secondary)
             }
 

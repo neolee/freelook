@@ -14,6 +14,7 @@
 		B5A7CCD02F68111100988F0A /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5A7CCCD2F68111100988F0A /* AppIntents.framework */; };
 		B5A7CCD12F68111200988F0A /* QuickLookExtension/UTIMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A7CCD22F68111200988F0A /* QuickLookExtension/UTIMapper.swift */; };
 		C9A100102F689500006D34B2 /* QuickLookExtension/PreviewFileLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A100112F689500006D34B2 /* QuickLookExtension/PreviewFileLoader.swift */; };
+		C9A100202F689500006D34B2 /* QuickLookExtension/SharedPreviewSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A100212F689500006D34B2 /* QuickLookExtension/SharedPreviewSettings.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +56,7 @@
 		B5A7CCCD2F68111100988F0A /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
 		B5A7CCD22F68111200988F0A /* QuickLookExtension/UTIMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookExtension/UTIMapper.swift; sourceTree = SOURCE_ROOT; };
 		C9A100112F689500006D34B2 /* QuickLookExtension/PreviewFileLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookExtension/PreviewFileLoader.swift; sourceTree = SOURCE_ROOT; };
+		C9A100212F689500006D34B2 /* QuickLookExtension/SharedPreviewSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookExtension/SharedPreviewSettings.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -125,7 +127,7 @@
 				B5A7CCC32F680BF500988F0A /* Tests */,
 				B5A7CCAA2F680BA200988F0A /* Frameworks */,
 				B5A7CC982F680B2A00988F0A /* Products */,
-				B5A7CD0A2F6820B400988F0A /* Recovered References */,
+				B5A7CD0A2F6820B400988F0A /* Cross-Target Sources */,
 			);
 			sourceTree = "<group>";
 		};
@@ -148,13 +150,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		B5A7CD0A2F6820B400988F0A /* Recovered References */ = {
+		B5A7CD0A2F6820B400988F0A /* Cross-Target Sources */ = {
 			isa = PBXGroup;
 			children = (
+				C9A100212F689500006D34B2 /* QuickLookExtension/SharedPreviewSettings.swift */,
 				C9A100112F689500006D34B2 /* QuickLookExtension/PreviewFileLoader.swift */,
 				B5A7CCD22F68111200988F0A /* QuickLookExtension/UTIMapper.swift */,
 			);
-			name = "Recovered References";
+			name = "Cross-Target Sources";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -304,6 +307,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9A100202F689500006D34B2 /* QuickLookExtension/SharedPreviewSettings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

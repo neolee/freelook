@@ -69,7 +69,7 @@ Run from repo root:
 
 - Unit tests live in the `Tests` target.
 - Run the full unit test suite after every implementation step, even if the step does not introduce new tests.
-- The test file will be renamed to `UTIMapperTests.swift` when `UTIMapper.swift` is implemented. It must cover at least one representative `UTType` for each category: Markdown, JSON, XML, Swift, Python, JavaScript, shell script, and generic source code (should map to a valid Shiki lang string or `"text"`).
+- `UTIMapperTests.swift` must cover at least one representative `UTType` for each category: Markdown, JSON, XML, Swift, Python, JavaScript, shell script, and generic source code (should map to a valid Shiki lang string or `"text"`).
 - After any change to `UTIMapper.swift`, run the unit tests locally.
 - Rendering pipeline correctness is verified manually: open a representative file of each supported type via Quick Look and confirm the output looks correct.
 - Do not add snapshot tests or UI tests without discussing with the user first.
