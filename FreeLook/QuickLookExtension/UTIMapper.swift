@@ -14,6 +14,7 @@ enum UTIMapper {
         "net.ia.markdown"
     )
     private static let javaScriptTypes = supportedTypes(
+        "net.paradigmx.commonjs-source",
         "com.netscape.javascript-source"
     )
     private static let typeScriptTypes = supportedTypes(

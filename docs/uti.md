@@ -19,7 +19,8 @@ In practice, the difficult part is often not the Quick Look extension itself but
 ### Markdown routing baseline
 
 - FreeLook currently declares `net.daringfireball.markdown` in `QLSupportedContentTypes`.
-- `QuickLookExtension/Info.plist` also imports Markdown tags so that `md`, `markdown`, and `text/markdown` have an explicit local path to `net.daringfireball.markdown`.
+- FreeLook currently keeps the Markdown imported declaration in `QuickLookExtension/Info.plist`.
+- The current extension-level imported declaration gives `md`, `markdown`, and `text/markdown` an explicit local path to `net.daringfireball.markdown`.
 - On a clean-enough system state, both `.md` and `.markdown` can resolve to `net.daringfireball.markdown`, and default Quick Look will route Markdown files to `net.paradigmx.FreeLook.QuickLookExtension`.
 
 ### Post-reboot cleanup status
@@ -64,6 +65,7 @@ Apple documents the existence of the candidate set and the preferred type, but t
 ## Practical rules for FreeLook
 
 - Treat `QLSupportedContentTypes` as the final "can this extension preview this resolved type?" gate.
+- Keep imported and exported type declarations in the containing app bundle by default. Keep Quick Look capability declarations in `QuickLookExtension/Info.plist`.
 - Treat `UTImportedTypeDeclarations` and `UTExportedTypeDeclarations` as inputs into system type resolution, not as direct Quick Look routing controls.
 - Validate both the preferred type and the provider actually selected by Quick Look.
 - When a routing failure appears, do not assume the extension declaration is wrong before checking for third-party LaunchServices pollution.
@@ -77,10 +79,11 @@ Apple documents the existence of the candidate set and the preferred type, but t
 The current best strategy for FreeLook is:
 
 1. Start from the current `QLSupportedContentTypes` whitelist in `QuickLookExtension/Info.plist`.
-2. For each important file extension, inspect the preferred `UTType` and the candidate set observed on a real machine.
-3. If the system resolves that extension to one of FreeLook's claimed, semantically valid `UTType`s, FreeLook will usually be launched as long as no stronger competing Quick Look provider takes precedence.
-4. If coverage is missing, add more semantically valid `UTType`s, not polluted fallback identifiers.
-5. If a candidate type is low-quality, machine-specific, or obviously wrong for the file format, document it as rejected instead of claiming it.
+2. Keep `UTImportedTypeDeclarations` in `FreeLook/Info.plist` unless a later experiment proves that an extension-local declaration is equally effective.
+3. For each important file extension, inspect the preferred `UTType` and the candidate set observed on a real machine.
+4. If the system resolves that extension to one of FreeLook's claimed, semantically valid `UTType`s, FreeLook will usually be launched as long as no stronger competing Quick Look provider takes precedence.
+5. If coverage is missing, add more semantically valid `UTType`s, not polluted fallback identifiers.
+6. If a candidate type is low-quality, machine-specific, or obviously wrong for the file format, document it as rejected instead of claiming it.
 
 This is intentionally a probability-maximizing strategy, not a guarantee. Apple does not document the full provider tie-break algorithm, and other installed Quick Look extensions may still win for some types.
 
@@ -90,7 +93,7 @@ The first audit of the v1.0 whitelist on the current machine led to three kinds 
 
 - replace invalid identifiers,
 - add semantically valid vendor-specific candidates that real extensions can resolve to, and
-- add minimal imported declarations only where a useful developer-file extension lacks a stable semantic mapping.
+- add product-owned type declarations where a useful developer-file extension lacks a stable semantic mapping.
 
 ### Accepted additions
 
@@ -99,7 +102,7 @@ The first audit of the v1.0 whitelist on the current machine led to three kinds 
 - CSS: `org.w3.css`
 - Markdown: `io.typora.markdown`, `net.ia.markdown`
 - Common C-family source types: `public.c-source`, `public.c-header`, `public.objective-c-source`, `public.objective-c-plus-plus-source`, `public.c-plus-plus-source`
-- Imported tag for CommonJS: `com.netscape.javascript-source` now locally imports `cjs`
+- Product-owned CommonJS type: `net.paradigmx.commonjs-source`
 
 ### Explicitly rejected candidates
 
@@ -119,16 +122,42 @@ On the current machine:
 
 FreeLook now claims the semantically valid TypeScript identifiers, but it does not try to override ambiguous media extensions globally. That is a deliberate product decision: the app should not steal real transport-stream files just to improve TypeScript routing on one machine.
 
-### Imported declarations are still best-effort
+### `cjs` custom-type experiment
 
-The first `cjs` experiment is a useful reminder that `UTImportedTypeDeclarations` are not a guaranteed global rewrite mechanism.
+The first two `cjs` experiments showed that binding `cjs` directly onto `com.netscape.javascript-source` was not enough to replace the system's `dyn.*` fallback on the current machine.
 
-FreeLook now imports `cjs` into `com.netscape.javascript-source` in the extension bundle, but on the current machine:
+FreeLook then tested a stronger configuration:
 
-- `UTType(filenameExtension: "cjs")` still resolves to a dynamic `dyn.*` identifier
-- the candidate set still does not expose a stable semantic JavaScript type for `cjs`
+- export `net.paradigmx.commonjs-source`,
+- bind `cjs` directly to that exported identifier,
+- declare that the new type conforms to `com.netscape.javascript-source`, `public.script`, and `public.source-code`, and
+- claim `net.paradigmx.commonjs-source` directly in `QLSupportedContentTypes`.
 
-So the imported declaration is still worth keeping as a semantic hint inside the product configuration, but it should not be treated as proof that the OS will immediately update the global preferred type for that extension.
+This is a more complete experiment than the earlier imported-only approach because it gives LaunchServices a stable product-owned identifier instead of asking the OS to merge `cjs` into an existing global JavaScript type.
+
+This experiment succeeded on the current machine:
+
+- `UTType(filenameExtension: "cjs") == net.paradigmx.commonjs-source`
+- the candidate set for `cjs` is now `["net.paradigmx.commonjs-source"]`
+- a real `.cjs` file resolves to `net.paradigmx.commonjs-source`
+- Finder reports the kind string `CommonJS Source`
+- `qlmanage -p` for a `.cjs` file launches `net.paradigmx.FreeLook.QuickLookExtension`
+
+The practical conclusion is that a product-owned exported UTI is a viable fix when a developer-oriented extension otherwise falls back to a useless `dyn.*` type.
+
+### Bundle placement follow-up
+
+The next control experiment moved the CommonJS and Markdown type declarations back from the host app bundle into `QuickLookExtension/Info.plist`.
+
+That experiment also succeeded on the current machine:
+
+- `UTType(filenameExtension: "cjs")` remained `net.paradigmx.commonjs-source`
+- the candidate set for `cjs` remained `["net.paradigmx.commonjs-source"]`
+- a real `.cjs` file still resolved to `net.paradigmx.commonjs-source`
+- Finder still reported `CommonJS Source`
+- `qlmanage -p` still launched `net.paradigmx.FreeLook.QuickLookExtension`
+
+So the earlier "host app only" inference was too strong. At least for this project and this OS state, the extension bundle itself is sufficient to register the product-owned CommonJS type. Bundle placement should therefore be treated as an empirical question, not as a fixed rule.
 
 ## FreeLook v1.0 baseline whitelist
 
@@ -142,6 +171,7 @@ The current v1.0 `QLSupportedContentTypes` baseline is:
 - `public.c-plus-plus-source`
 - `public.swift-source`
 - `public.python-script`
+- `net.paradigmx.commonjs-source`
 - `com.netscape.javascript-source`
 - `public.typescript`
 - `com.microsoft.typescript`

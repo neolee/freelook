@@ -74,6 +74,8 @@ The extension's current `QLSupportedContentTypes` list is the FreeLook v1.0 base
 
 Do not assume that a parent type such as `public.source-code` is sufficient to reliably claim all descendant source-file types. The registration strategy is to cover the semantically valid `UTType` candidates that important extensions resolve to on real systems, while avoiding polluted or low-quality identifiers that happen to appear in LaunchServices. This must still be established by explicit Quick Look experiments during Phase 4 and should be documented with representative findings for Swift, Markdown, JSON, XML, and at least one additional source-code subtype.
 
+Keep Quick Look capability declarations in the extension bundle. Do not assume imported or exported type declarations must live in the host app bundle; establish the effective bundle placement by experiment and record the result in `docs/uti.md`.
+
 The detailed LaunchServices and `UTType` findings now live in `docs/uti.md`. That document is the source of truth for:
 
 - how file extensions are resolved to preferred `UTType`s on the current system,
