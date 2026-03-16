@@ -65,7 +65,8 @@ Apple documents the existence of the candidate set and the preferred type, but t
 ## Practical rules for FreeLook
 
 - Treat `QLSupportedContentTypes` as the final "can this extension preview this resolved type?" gate.
-- Keep imported and exported type declarations in the containing app bundle by default. Keep Quick Look capability declarations in `QuickLookExtension/Info.plist`.
+- Keep all file-type registration declarations in `QuickLookExtension/Info.plist`, including `CFBundleDocumentTypes`, `UTImportedTypeDeclarations`, `UTExportedTypeDeclarations`, and `QLSupportedContentTypes`.
+- The current validated baseline is that the tested Markdown and CommonJS declarations work from `QuickLookExtension/Info.plist` alone and do not require matching file-type declarations in the host app `Info.plist`.
 - Treat `UTImportedTypeDeclarations` and `UTExportedTypeDeclarations` as inputs into system type resolution, not as direct Quick Look routing controls.
 - Validate both the preferred type and the provider actually selected by Quick Look.
 - When a routing failure appears, do not assume the extension declaration is wrong before checking for third-party LaunchServices pollution.
@@ -79,11 +80,12 @@ Apple documents the existence of the candidate set and the preferred type, but t
 The current best strategy for FreeLook is:
 
 1. Start from the current `QLSupportedContentTypes` whitelist in `QuickLookExtension/Info.plist`.
-2. Keep `UTImportedTypeDeclarations` in `FreeLook/Info.plist` unless a later experiment proves that an extension-local declaration is equally effective.
+2. Keep file-type registration declarations in `QuickLookExtension/Info.plist`. The present local baseline shows that the tested Markdown/CommonJS cases do not require host-app placement.
 3. For each important file extension, inspect the preferred `UTType` and the candidate set observed on a real machine.
 4. If the system resolves that extension to one of FreeLook's claimed, semantically valid `UTType`s, FreeLook will usually be launched as long as no stronger competing Quick Look provider takes precedence.
-5. If coverage is missing, add more semantically valid `UTType`s, not polluted fallback identifiers.
-6. If a candidate type is low-quality, machine-specific, or obviously wrong for the file format, document it as rejected instead of claiming it.
+5. If coverage is missing and the extension falls back to an opaque `dyn.*` identifier, prefer exporting a product-owned UTI and claiming that exact type instead of trying to absorb the extension into an unrelated global type.
+6. If coverage is missing for other reasons, add more semantically valid `UTType`s, not polluted fallback identifiers.
+7. If a candidate type is low-quality, machine-specific, or obviously wrong for the file format, document it as rejected instead of claiming it.
 
 This is intentionally a probability-maximizing strategy, not a guarantee. Apple does not document the full provider tie-break algorithm, and other installed Quick Look extensions may still win for some types.
 
@@ -157,7 +159,27 @@ That experiment also succeeded on the current machine:
 - Finder still reported `CommonJS Source`
 - `qlmanage -p` still launched `net.paradigmx.FreeLook.QuickLookExtension`
 
-So the earlier "host app only" inference was too strong. At least for this project and this OS state, the extension bundle itself is sufficient to register the product-owned CommonJS type. Bundle placement should therefore be treated as an empirical question, not as a fixed rule.
+So the earlier "host app only" inference was too strong. At least for this project and this OS state, the extension bundle itself is sufficient for the tested file-type registration surface, including the product-owned CommonJS type and the Markdown declarations.
+
+### Negative control: cache-versus-causality check
+
+Because the bundle-placement follow-up reused the same product-owned CommonJS identifier, cache persistence was a reasonable concern. A negative-control experiment therefore removed the CommonJS declarations from both the app and the extension and rebuilt the project before re-probing the system state.
+
+That negative control reverted the machine to the broken behavior:
+
+- `UTType(filenameExtension: "cjs")` fell back to `dyn.ah62d4rv4ge80g4xx`
+- the candidate set for `cjs` collapsed back to a dynamic identifier
+- a real `.cjs` file resolved to the same `dyn.*` type
+- Finder reported the generic kind string `Document`
+
+After restoring the product-owned CommonJS declaration in `QuickLookExtension/Info.plist`, the machine returned to:
+
+- `UTType(filenameExtension: "cjs") == net.paradigmx.commonjs-source`
+- a real `.cjs` file resolving to `net.paradigmx.commonjs-source`
+- Finder reporting `CommonJS Source`
+- `qlmanage -p /tmp/freelook_probe.cjs` launching `net.paradigmx.FreeLook.QuickLookExtension`
+
+This rules out the simplest "the result only survived because of stale LaunchServices cache" explanation. On the current machine, the CommonJS declaration is causally responsible for the observed routing change.
 
 ## FreeLook v1.0 baseline whitelist
 

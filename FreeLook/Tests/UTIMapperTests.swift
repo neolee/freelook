@@ -38,8 +38,7 @@ struct UTIMapperTests {
     }
 
     @Test func mapsJavaScript() {
-        let contentType = UTType("com.netscape.javascript-source")
-        #expect(UTIMapper.languageIdentifier(for: contentType) == "javascript")
+        #expect(UTIMapper.languageIdentifier(for: UTType("com.netscape.javascript-source")) == "javascript")
         #expect(UTIMapper.languageIdentifier(for: UTType("net.paradigmx.commonjs-source")) == "javascript")
     }
 
