@@ -29,6 +29,20 @@ Two targets inside `FreeLook/FreeLook.xcodeproj`:
 Both targets share an App Group (`group.net.paradigmx.FreeLook`) for `UserDefaults`
 preference exchange.
 
+### Validated `WKWebView` Requirement
+
+`QuickLookExtension` keeps `com.apple.security.network.client = true` in
+`QuickLookExtension.entitlements`.
+
+This is not speculative: a local capability test on the current project showed
+that `WKWebView` inside the Quick Look extension repeatedly crashed its
+`WebContent` process before the first committed load when the entitlement was
+absent. The same minimal HTML preview completed `didCommitLoadForFrame` and
+`didFinishLoadForFrame` after enabling `network.client`.
+
+Treat this entitlement as part of the baseline for any future WebKit-based
+preview work unless a later validated experiment proves a narrower setup.
+
 ### JS Rendering Pipeline
 
 A standalone npm sub-project lives in `WebRenderer/` and is built separately with
@@ -82,15 +96,13 @@ Dark: GitHub Dark, One Dark Pro, Catppuccin Mocha, Nord, Dracula
 
 ## UTI Coverage
 
-The extension's `Info.plist` declares `QLSupportedContentTypes`:
+The extension's current `QLSupportedContentTypes` list is still provisional.
 
-- `public.source-code` — parent UTI; covers the majority of language subtypes
-- Priority explicit declarations: `public.swift-source`, `public.python-script`,
-  `com.netscape.javascript-source`, `public.typescript-source`, `public.css`,
-  `public.html`, `public.shell-script`, `public.ruby-script`
-- `net.daringfireball.markdown`
-- `public.json`
-- `public.xml`
+Do not assume that a parent type such as `public.source-code` is sufficient to
+reliably claim all descendant source-file types. The final registration strategy
+must be established by explicit Quick Look experiments during Phase 4 and should
+be documented with representative findings for Swift, Markdown, JSON, XML, and
+at least one additional source-code subtype.
 
 ---
 
@@ -252,8 +264,11 @@ checkpoint.
 ### Phase 4 — Polish
 
 4.1 UTI registration
-- Declare the full supported UTI list in `QuickLookExtension/Info.plist`.
-- Test representative file types to confirm the extension is triggered reliably.
+- Finalize the supported UTI list in `QuickLookExtension/Info.plist` using
+  explicit Quick Look experiments instead of assumptions about parent-type
+  coverage.
+- Test representative file types to confirm the extension is triggered reliably
+  and record any system-owned fallbacks or tie-break behaviors.
 - Verification gate: clean build; full unit test suite; user manually confirms file
   association behavior.
 

@@ -21,6 +21,11 @@ prescriptive, and focused on repository-wide rules.
 - Xcode project: `FreeLook/FreeLook.xcodeproj`.
 - Two targets: `FreeLook` (host app) and `QuickLookExtension` (QL Preview Extension).
 - App Groups identifier shared by both targets: `group.net.paradigmx.FreeLook`.
+- `QuickLookExtension` must keep the entitlement
+  `com.apple.security.network.client = true`. A validated local experiment showed
+  that `WKWebView` inside the Quick Look extension crashes before the first page
+  commit without this entitlement, while the same minimal HTML preview loads
+  successfully once it is enabled.
 - JS renderer sub-project: `WebRenderer/` (npm + esbuild). It is **not** part of the Xcode build; run it separately when changing `renderer.js`. The built artifact `bundle.js` lives at `QuickLookExtension/Resources/bundle.js`.
 - Syntax highlighting: Shiki v1.x with `createJavaScriptRegexEngine()` — no WASM.
 - Markdown: markdown-it + @shikijs/markdown-it plugin.
