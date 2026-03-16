@@ -84,20 +84,78 @@ The current best strategy for FreeLook is:
 
 This is intentionally a probability-maximizing strategy, not a guarantee. Apple does not document the full provider tie-break algorithm, and other installed Quick Look extensions may still win for some types.
 
+## First whitelist audit
+
+The first audit of the v1.0 whitelist on the current machine led to three kinds of changes:
+
+- replace invalid identifiers,
+- add semantically valid vendor-specific candidates that real extensions can resolve to, and
+- add minimal imported declarations only where a useful developer-file extension lacks a stable semantic mapping.
+
+### Accepted additions
+
+- TypeScript: `public.typescript`, `com.microsoft.typescript`, `org.typescriptlang.typescript`
+- Shell subtypes: `public.zsh-script`, `public.bash-script`
+- CSS: `org.w3.css`
+- Markdown: `io.typora.markdown`, `net.ia.markdown`
+- Common C-family source types: `public.c-source`, `public.c-header`, `public.objective-c-source`, `public.objective-c-plus-plus-source`, `public.c-plus-plus-source`
+- Imported tag for CommonJS: `com.netscape.javascript-source` now locally imports `cjs`
+
+### Explicitly rejected candidates
+
+- Markdown pollution example: `com.unknown.md`
+- JSON app-specific type: `com.omnigroup.statusboard`
+- XML document-specific types such as `com.microsoft.excel.xml` and `com.microsoft.word.wordml`
+- Media types that collide with TypeScript extensions, such as `public.mpeg-2-transport-stream` and `public.avchd-mpeg-2-transport-stream`
+- Dynamic or opaque identifiers such as the current `cjs` fallback `dyn.*`
+
+### Why TypeScript is still only partially solvable
+
+On the current machine:
+
+- `tsx` and `cts` already resolve to semantically valid TypeScript identifiers
+- `ts` prefers `public.mpeg-2-transport-stream`
+- `mts` prefers `public.avchd-mpeg-2-transport-stream`
+
+FreeLook now claims the semantically valid TypeScript identifiers, but it does not try to override ambiguous media extensions globally. That is a deliberate product decision: the app should not steal real transport-stream files just to improve TypeScript routing on one machine.
+
+### Imported declarations are still best-effort
+
+The first `cjs` experiment is a useful reminder that `UTImportedTypeDeclarations` are not a guaranteed global rewrite mechanism.
+
+FreeLook now imports `cjs` into `com.netscape.javascript-source` in the extension bundle, but on the current machine:
+
+- `UTType(filenameExtension: "cjs")` still resolves to a dynamic `dyn.*` identifier
+- the candidate set still does not expose a stable semantic JavaScript type for `cjs`
+
+So the imported declaration is still worth keeping as a semantic hint inside the product configuration, but it should not be treated as proof that the OS will immediately update the global preferred type for that extension.
+
 ## FreeLook v1.0 baseline whitelist
 
 The current v1.0 `QLSupportedContentTypes` baseline is:
 
 - `public.source-code`
+- `public.c-source`
+- `public.c-header`
+- `public.objective-c-source`
+- `public.objective-c-plus-plus-source`
+- `public.c-plus-plus-source`
 - `public.swift-source`
 - `public.python-script`
 - `com.netscape.javascript-source`
-- `public.typescript-source`
+- `public.typescript`
+- `com.microsoft.typescript`
+- `org.typescriptlang.typescript`
 - `public.css`
+- `org.w3.css`
 - `public.html`
 - `public.shell-script`
+- `public.zsh-script`
+- `public.bash-script`
 - `public.ruby-script`
 - `net.daringfireball.markdown`
+- `io.typora.markdown`
+- `net.ia.markdown`
 - `public.json`
 - `public.xml`
 
