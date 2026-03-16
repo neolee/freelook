@@ -1,15 +1,13 @@
 # FreeLook — Agent Engineering Notes
 
-Reference for AI coding agents working on this codebase. Keep this file concise,
-prescriptive, and focused on repository-wide rules.
+Reference for AI coding agents working on this codebase. Keep this file concise, prescriptive, and focused on repository-wide rules.
 
 ---
 
 ## 1. Communication and Documentation
 
 - Communicate with the user in Chinese.
-- Write code comments and repository documentation in English unless explicitly
-  requested otherwise.
+- Write code comments and repository documentation in English unless explicitly requested otherwise.
 - Do not use emojis in code comments or documentation.
 - Use backticks for code references in Markdown.
 
@@ -21,11 +19,9 @@ prescriptive, and focused on repository-wide rules.
 - Xcode project: `FreeLook/FreeLook.xcodeproj`.
 - Two targets: `FreeLook` (host app) and `QuickLookExtension` (QL Preview Extension).
 - App Groups identifier shared by both targets: `group.net.paradigmx.FreeLook`.
-- `QuickLookExtension` must keep the entitlement
-  `com.apple.security.network.client = true`. A validated local experiment showed
-  that `WKWebView` inside the Quick Look extension crashes before the first page
-  commit without this entitlement, while the same minimal HTML preview loads
-  successfully once it is enabled.
+- `QuickLookExtension` must keep the entitlement `com.apple.security.network.client = true`. A validated local experiment showed that `WKWebView` inside the Quick Look extension crashes before the first page commit without this entitlement, while the same minimal HTML preview loads successfully once it is enabled.
+- Keep detailed `UTType` / LaunchServices / Quick Look registration findings in `docs/uti.md`. `AGENTS.md` and `docs/plan.md` should only keep the high-level constraints that remain true after the detailed investigation changes.
+- For file-type coverage, reason in terms of resolved `UTType`s, not filename extensions alone. The practical goal is to claim the semantically valid `UTType` candidates that a target extension may resolve to, while explicitly avoiding polluted or low-quality identifiers that are not acceptable product surface.
 - JS renderer sub-project: `WebRenderer/` (npm + esbuild). It is **not** part of the Xcode build; run it separately when changing `renderer.js`. The built artifact `bundle.js` lives at `QuickLookExtension/Resources/bundle.js`.
 - Syntax highlighting: Shiki v1.x with `createJavaScriptRegexEngine()` — no WASM.
 - Markdown: markdown-it + @shikijs/markdown-it plugin.
@@ -46,14 +42,10 @@ Run from repo root:
 
 - Do not pipe or post-process build output.
 - Keep the build free of compiler errors and warnings.
-- Treat each implementation step as a gated checkpoint that must be independently
-  verifiable.
-- Before moving to the next implementation step, run `./scripts/build` and all
-  existing unit tests locally; both must finish with no errors and no warnings.
-- After completing a step, stop and wait for the user to verify the result and
-  create a version-control baseline before continuing to the next step.
-- If a step cannot satisfy the build/test/user-baseline gate, do not continue to
-  the next planned step.
+- Treat each implementation step as a gated checkpoint that must be independently verifiable.
+- Before moving to the next implementation step, run `./scripts/build` and all existing unit tests locally; both must finish with no errors and no warnings.
+- After completing a step, stop and wait for the user to verify the result and create a version-control baseline before continuing to the next step.
+- If a step cannot satisfy the build/test/user-baseline gate, do not continue to the next planned step.
 - If tooling returns empty or missing output, stop and ask the user to verify manually.
 - To rebuild `bundle.js` after changing `WebRenderer/src/renderer.js`:
   ```shell
@@ -67,21 +59,15 @@ Run from repo root:
 
 - The app UI is English-only; no formal localization (`Localizable.strings`) is needed.
 - Do not wrap strings in `NSLocalizedString` speculatively.
-- Theme names are display strings defined in `SettingsStore.swift`; they are not
-  localized.
+- Theme names are display strings defined in `SettingsStore.swift`; they are not localized.
 
 ---
 
 ## 5. Testing Rules
 
 - Unit tests live in the `Tests` target.
-- Run the full unit test suite after every implementation step, even if the step
-  does not introduce new tests.
-- The test file will be renamed to `UTIMapperTests.swift` when `UTIMapper.swift` is
-  implemented. It must cover at least one representative `UTType` for each category:
-  Markdown, JSON, XML, Swift, Python, JavaScript, shell script, and generic source
-  code (should map to a valid Shiki lang string or `"text"`).
+- Run the full unit test suite after every implementation step, even if the step does not introduce new tests.
+- The test file will be renamed to `UTIMapperTests.swift` when `UTIMapper.swift` is implemented. It must cover at least one representative `UTType` for each category: Markdown, JSON, XML, Swift, Python, JavaScript, shell script, and generic source code (should map to a valid Shiki lang string or `"text"`).
 - After any change to `UTIMapper.swift`, run the unit tests locally.
-- Rendering pipeline correctness is verified manually: open a representative file of
-  each supported type via Quick Look and confirm the output looks correct.
+- Rendering pipeline correctness is verified manually: open a representative file of each supported type via Quick Look and confirm the output looks correct.
 - Do not add snapshot tests or UI tests without discussing with the user first.

@@ -1,0 +1,226 @@
+# FreeLook — UTI and LaunchServices Notes
+
+This document records the detailed findings behind FreeLook's file-type registration work. Keep `AGENTS.md` and `plan.md` high-level; put investigative detail here instead.
+
+## Scope
+
+FreeLook can only receive a file in Quick Look after the system has already resolved that file to a `UTType` that matches one of the extension's `QLSupportedContentTypes`.
+
+In practice, the difficult part is often not the Quick Look extension itself but the system's LaunchServices and `UTType` environment for a given filename extension.
+
+## Current validated findings
+
+### `WKWebView` baseline
+
+- `QuickLookExtension` must keep `com.apple.security.network.client = true`.
+- Without that entitlement, the extension's `WKWebView` repeatedly crashed its `WebContent` process before the first committed load.
+- With that entitlement enabled, the same minimal local HTML page completed `didCommitLoadForFrame` and `didFinishLoadForFrame`.
+
+### Markdown routing baseline
+
+- FreeLook currently declares `net.daringfireball.markdown` in `QLSupportedContentTypes`.
+- `QuickLookExtension/Info.plist` also imports Markdown tags so that `md`, `markdown`, and `text/markdown` have an explicit local path to `net.daringfireball.markdown`.
+- On a clean-enough system state, both `.md` and `.markdown` can resolve to `net.daringfireball.markdown`, and default Quick Look will route Markdown files to `net.paradigmx.FreeLook.QuickLookExtension`.
+
+### Post-reboot cleanup status
+
+After the LaunchServices reset and OS reboot, the local machine returned to a clean Markdown baseline:
+
+- `UTType(filenameExtension: "md") == net.daringfireball.markdown`
+- `UTType(filenameExtension: "markdown") == net.daringfireball.markdown`
+- the candidate set for `md` no longer includes `com.unknown.md`
+- actual `.md` files resolve to `net.daringfireball.markdown`
+- default Quick Look for Markdown launches `net.paradigmx.FreeLook.QuickLookExtension`
+
+### Observed pollution case: `com.unknown.md`
+
+During diagnosis on the current machine, `.md` files initially resolved to `com.unknown.md` instead of `net.daringfireball.markdown`.
+
+That was not an abstract system fallback. A concrete app, `TeXShop`, declared:
+
+- `CFBundleDocumentTypes` with `md` mapped to `LSItemContentTypes = com.unknown.md`
+- `UTImportedTypeDeclarations` importing `com.unknown.md` for the `md` extension
+
+Once `TeXShop.app` was removed and stale LaunchServices preferences were cleaned, the preferred type for `.md` changed back to `net.daringfireball.markdown`.
+
+Important implication:
+
+- multiple apps may legitimately claim the same extension,
+- the preferred `UTType` is not guaranteed to be the obvious or semantically best one, and
+- Quick Look provider selection depends on the resolved type, not on the user's default editor alone.
+
+## Working model
+
+The local experiments support the following model:
+
+1. Bundles register document types and UTIs through `CFBundleDocumentTypes`, `UTExportedTypeDeclarations`, and `UTImportedTypeDeclarations`.
+2. LaunchServices builds a candidate set of `UTType`s for a tag such as the filename extension `md`.
+3. The system picks a preferred type for that tag.
+4. Finder kind strings and `URLResourceValues.contentTypeKey` follow that preferred type.
+5. Quick Look routing then uses that resolved content type to choose a preview provider.
+
+Apple documents the existence of the candidate set and the preferred type, but the exact tie-breaking algorithm for competing `UTType` claims is not publicly specified in enough detail to treat it as deterministic.
+
+## Practical rules for FreeLook
+
+- Treat `QLSupportedContentTypes` as the final "can this extension preview this resolved type?" gate.
+- Treat `UTImportedTypeDeclarations` and `UTExportedTypeDeclarations` as inputs into system type resolution, not as direct Quick Look routing controls.
+- Validate both the preferred type and the provider actually selected by Quick Look.
+- When a routing failure appears, do not assume the extension declaration is wrong before checking for third-party LaunchServices pollution.
+- Prefer exact, well-known `UTType` identifiers over broad parent types.
+- For an important filename extension, inspect the real candidate `UTType` set on the target system and try to claim the semantically valid candidates that FreeLook should own.
+- Do not claim every identifier in the candidate set. Reject polluted or low-quality identifiers such as `com.unknown.md` even if claiming them might increase routing coverage on one machine.
+- In practical terms: maximize coverage across reasonable `UTType`s, not across arbitrary strings that happen to appear in LaunchServices.
+
+## Working registration strategy
+
+The current best strategy for FreeLook is:
+
+1. Start from the current `QLSupportedContentTypes` whitelist in `QuickLookExtension/Info.plist`.
+2. For each important file extension, inspect the preferred `UTType` and the candidate set observed on a real machine.
+3. If the system resolves that extension to one of FreeLook's claimed, semantically valid `UTType`s, FreeLook will usually be launched as long as no stronger competing Quick Look provider takes precedence.
+4. If coverage is missing, add more semantically valid `UTType`s, not polluted fallback identifiers.
+5. If a candidate type is low-quality, machine-specific, or obviously wrong for the file format, document it as rejected instead of claiming it.
+
+This is intentionally a probability-maximizing strategy, not a guarantee. Apple does not document the full provider tie-break algorithm, and other installed Quick Look extensions may still win for some types.
+
+## FreeLook v1.0 baseline whitelist
+
+The current v1.0 `QLSupportedContentTypes` baseline is:
+
+- `public.source-code`
+- `public.swift-source`
+- `public.python-script`
+- `com.netscape.javascript-source`
+- `public.typescript-source`
+- `public.css`
+- `public.html`
+- `public.shell-script`
+- `public.ruby-script`
+- `net.daringfireball.markdown`
+- `public.json`
+- `public.xml`
+
+This list should be treated as the baseline validation surface for FreeLook v1.0. Future registration work should begin by validating this whitelist against real files and real system `UTType` resolution behavior before expanding it.
+
+## Useful probes
+
+No dedicated repo-owned diagnostic script exists yet. The following commands were used during the investigation and are worth keeping around.
+
+### 1. Preferred type for an extension
+
+```shell
+swift -e 'import UniformTypeIdentifiers; print(UTType(filenameExtension: "md")?.identifier ?? "nil")'
+```
+
+### 2. All candidate types for an extension
+
+```shell
+swift -e 'import UniformTypeIdentifiers; print(UTType.types(tag: "md", tagClass: .filenameExtension, conformingTo: nil).map{$0.identifier}.sorted())'
+```
+
+### 3. Resolved type for a specific file URL
+
+```shell
+swift -e 'import Foundation; import UniformTypeIdentifiers; let url = URL(fileURLWithPath: "/path/to/file.md"); let values = try url.resourceValues(forKeys: [.contentTypeKey, .localizedTypeDescriptionKey]); print(values.contentType?.identifier ?? "nil"); print(values.localizedTypeDescription ?? "nil")'
+```
+
+### 4. Inspect extension or app bundle declarations
+
+```shell
+plutil -p /Applications/Typora.app/Contents/Info.plist
+plutil -p /Applications/TeX/TeXShop.app/Contents/Info.plist
+plutil -p /Users/neo/Library/Developer/Xcode/DerivedData/.../QuickLookExtension.appex/Contents/Info.plist
+```
+
+### 5. Search installed bundles for a suspicious type identifier
+
+```shell
+rg -n --glob 'Info.plist' 'com\.unknown\.md' /Applications /System/Applications /Library /Users/neo/Applications 2>/dev/null
+```
+
+### 6. Inspect LaunchServices handler preferences
+
+```shell
+defaults read ~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers
+```
+
+A more readable form:
+
+```shell
+defaults export ~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure - 2>/dev/null | plutil -convert json -o - - | ruby -rjson -e 'data=JSON.parse(STDIN.read); (data["LSHandlers"]||[]).each_with_index{|h,i| puts "#{i}\t#{h}" if h["LSHandlerContentType"]=="net.daringfireball.markdown" || h["LSHandlerContentType"]=="com.unknown.md" }'
+```
+
+### 7. Inspect the LaunchServices registration database
+
+```shell
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -dump | rg -n -C8 'net\.daringfireball\.markdown|com\.unknown\.md|Typora|TeXShop'
+```
+
+### 8. Force Quick Look to use a specific type
+
+```shell
+qlmanage -c net.daringfireball.markdown -p /path/to/file.md
+```
+
+This is useful for separating:
+
+- "the file was resolved to the wrong type" from
+- "the file resolved to the right type but Quick Look still chose another provider"
+
+### 9. Observe the actual preview provider chosen
+
+```shell
+/usr/bin/log show --last 1m --style compact --predicate '(process == "QuickLookExtension" OR process == "qlmanage" OR process == "QLPreviewGenerationExtension" OR eventMessage CONTAINS[c] "QuickLookExtension" OR eventMessage CONTAINS[c] "QLPreviewGenerationExtension")'
+```
+
+### 10. Reset Quick Look caches
+
+```shell
+qlmanage -r
+qlmanage -r cache
+```
+
+## Cleanup actions used locally
+
+### Garbage-collect LaunchServices
+
+```shell
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -gc
+```
+
+### Remove a stale user-level handler preference
+
+Example from the Markdown investigation:
+
+```shell
+plutil -remove LSHandlers.281 ~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist
+```
+
+Do not reuse an index blindly. Recompute it from the readable JSON export first.
+
+### Full LaunchServices reset
+
+```shell
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -delete
+```
+
+Apple's own help text warns that a reboot is required after deleting the database. Use this only when incremental cleanup is not enough.
+
+### Local cleanup status
+
+On 2026-03-16, after incremental cleanup was not enough to fully remove stale candidate identifiers from observation commands, the following reset was executed on the current development machine:
+
+```shell
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -delete
+qlmanage -r
+qlmanage -r cache
+```
+
+After `lsregister -delete`, LaunchServices is in a "reboot required" state. Any observations collected before the reboot should not be treated as the final post-cleanup baseline.
+
+## Open questions
+
+- Apple documents preferred type lookup but not a sufficiently precise tie-breaking algorithm for competing `UTType` claims.
+- The presence of a candidate in `UTType.types(tag:)` does not guarantee that it is still sourced from a live bundle; stale candidates may survive longer than the currently effective preferred type.
+- Some identifiers in the current `QLSupportedContentTypes` list, such as `public.typescript-source`, should be revalidated against the current OS before they are treated as stable.
