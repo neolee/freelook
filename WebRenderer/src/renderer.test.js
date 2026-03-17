@@ -49,15 +49,15 @@ describe("renderer bootstrap", () => {
     expect(html).toContain("plain &lt;text&gt;");
   });
 
-  test("falls back to escaped plain text when a supported grammar cannot compile", async () => {
+  test("renders Swift source code with Oniguruma wasm", async () => {
     const html = await renderPreview({
       content: "let value = 1\n",
       lang: "swift",
     });
 
-    expect(html).toContain("freelook-plain");
-    expect(html).toContain("data-lang=\"swift\"");
-    expect(html).toContain("let value = 1");
+    expect(html).toContain("class=\"shiki");
+    expect(html).toContain("--shiki-dark");
+    expect(html).toContain("span class=\"line\"");
   });
 
   test("installs the FreeLook global API", async () => {

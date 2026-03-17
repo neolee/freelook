@@ -112,6 +112,27 @@ body.state-screen .page-shell {
   line-height: 1.82;
 }
 
+.preview-render-root {
+  min-height: 1lh;
+}
+
+.preview-render-root .shiki,
+.preview-render-root .freelook-plain {
+  margin: 0;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: var(--code-bg);
+  overflow: auto;
+  font-family: var(--mono-font);
+  font-size: 13px;
+  line-height: 1.72;
+}
+
+.preview-render-root .freelook-plain {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .preview-notice {
   margin-top: 18px;
   padding: 12px 14px;

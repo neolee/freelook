@@ -61,7 +61,7 @@ Phase 2 should keep the JS side intentionally small and infrastructure-light.
 
 Recommended dependency set:
 
-- `shiki` v1.x with `createJavaScriptRegexEngine()`
+- `shiki` v1.x with Oniguruma/WASM via the inline `shiki/wasm` module
 - `markdown-it`
 - `@shikijs/markdown-it`
 - a small Markdown task-list plugin if needed to complete the practical GFM surface
@@ -79,6 +79,8 @@ Recommended non-goals for the first renderer phase:
 This is a deliberate trade-off. The job of renderer is narrow: transform file content into static HTML with syntax highlighting and a few warning states, then hand that result to the existing HTML shell. A framework would add more structure than value at this stage.
 
 Bun should be used for dependency installation, script execution, and JS tests. The final renderer code still runs inside `WKWebView`, so production code must not rely on Bun-specific runtime APIs or Node-only environment assumptions.
+
+For syntax highlighting, the validated baseline is `Shiki + Oniguruma/WASM`, packaged through the inline `shiki/wasm` module. This keeps the Quick Look extension on a single `bundle.js` runtime artifact and avoids a separate `onig.wasm` fetch path, which proved brittle in the `loadHTMLString(_:baseURL:)` preview environment.
 
 For Markdown safety, keep raw HTML disabled in the initial renderer unless a later requirement explicitly justifies sanitization and support. Practical GFM support does not require enabling arbitrary embedded HTML.
 
@@ -338,7 +340,7 @@ The remaining work should optimize for early visual validation without sacrifici
 ### Phase 3 — Renderer Rollout by Content Type
 
 3.1 Core source-code rendering
-- Implement the base `Shiki` pipeline in `renderer.js` with `createJavaScriptRegexEngine()` and the bundled theme set.
+- Implement the base `Shiki` pipeline in `renderer.js` with Oniguruma/WASM and the bundled theme set.
 - At this stage, remove the temporary development chrome so the Quick Look body converges toward the approved content-first presentation.
 - Verify representative source files from the sample corpus first.
 - Verification gate: clean native build; full unit test suite; user confirms the baseline code-reading surface.

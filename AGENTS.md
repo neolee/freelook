@@ -25,7 +25,8 @@ Reference for AI coding agents working on this codebase. Keep this file concise,
 - Keep all file-type registration declarations in `QuickLookExtension/Info.plist`, including `CFBundleDocumentTypes`, `UTImportedTypeDeclarations`, `UTExportedTypeDeclarations`, and `QLSupportedContentTypes`. The current validated baseline is that the tested registration surface works from the Quick Look extension bundle itself and does not require matching declarations in the host app `Info.plist`.
 - When LaunchServices behavior is ambiguous, prefer negative-control experiments that remove a declaration and verify the fallback path before attributing the result to cache or stale registration state.
 - JS renderer sub-project: `WebRenderer/` (Bun for package management, script execution, and JS tests; `esbuild` for browser bundling). It is **not** part of the Xcode build; run it separately when changing `renderer.js`. The built artifact `bundle.js` lives at `QuickLookExtension/Resources/bundle.js`.
-- Syntax highlighting: Shiki v1.x with `createJavaScriptRegexEngine()` — no WASM.
+- Syntax highlighting: Shiki v1.x with Oniguruma/WASM.
+- Renderer packaging baseline: use the inline wasm module path (`shiki/wasm`) so the extension only needs to load `bundle.js`; do not depend on a standalone `onig.wasm` resource unless a later validated experiment proves it is stable in the Quick Look `WKWebView` environment.
 - Markdown: markdown-it + @shikijs/markdown-it plugin.
 - JSON pretty-printing: native `JSON.stringify(JSON.parse(src), null, 2)` piped into Shiki with `lang: 'json'`.
 - XML pretty-printing: xml-formatter piped into Shiki with `lang: 'xml'`.

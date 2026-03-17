@@ -106,8 +106,39 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         </p>
         """
 
+        let renderPayload = makeRenderPayloadJSON(
+            content: preview.content,
+            languageIdentifier: languageIdentifier,
+            lightTheme: lightTheme,
+            darkTheme: darkTheme
+        )
+
         let content = """
-        <pre class="preview-codeblock"><code>\(escapeHTML(preview.content))</code></pre>
+        <div id="preview-root" class="preview-render-root" aria-live="polite"></div>
+        <div id="preview-runtime-notice" class="preview-notice" hidden></div>
+        <script id="preview-payload" type="application/json">\(renderPayload)</script>
+        <script>
+        (async () => {
+          const root = document.getElementById("preview-root");
+          const payloadElement = document.getElementById("preview-payload");
+          const runtimeNotice = document.getElementById("preview-runtime-notice");
+
+          if (!root || !payloadElement) {
+            return;
+          }
+
+          try {
+            const payload = JSON.parse(payloadElement.textContent || "{}");
+            const html = await window.FreeLook.render(payload);
+            root.innerHTML = html;
+          } catch (error) {
+            if (runtimeNotice) {
+              runtimeNotice.hidden = false;
+              runtimeNotice.textContent = error?.message ?? String(error);
+            }
+          }
+        })();
+        </script>
         """
 
         let meta = """
@@ -176,6 +207,27 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
 
     private func loadRenderedHTML(_ html: String) {
         webView.loadHTMLString(html, baseURL: resourcesBaseURL())
+    }
+
+    private func makeRenderPayloadJSON(
+        content: String,
+        languageIdentifier: String,
+        lightTheme: String,
+        darkTheme: String
+    ) -> String {
+        let payload: [String: String] = [
+            "content": content,
+            "lang": languageIdentifier,
+            "lightTheme": lightTheme,
+            "darkTheme": darkTheme,
+        ]
+
+        guard let data = try? JSONSerialization.data(withJSONObject: payload, options: []),
+              let json = String(data: data, encoding: .utf8) else {
+            return "{}"
+        }
+
+        return json.replacingOccurrences(of: "</script", with: "<\\/script")
     }
 
     private func loadTemplate(named name: String, withExtension fileExtension: String) -> String? {

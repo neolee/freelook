@@ -14,7 +14,8 @@ import githubLightTheme from "shiki/dist/themes/github-light.mjs";
 import nordTheme from "shiki/dist/themes/nord.mjs";
 import oneDarkProTheme from "shiki/dist/themes/one-dark-pro.mjs";
 import oneLightTheme from "shiki/dist/themes/one-light.mjs";
-import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
+import { createOnigurumaEngine } from "shiki/engine/oniguruma";
+import onigWasm from "shiki/wasm";
 
 const HTML_ESCAPE_MAP = {
   "&": "&amp;",
@@ -82,11 +83,15 @@ export function normalizeLanguageName(languageName) {
 
 function getHighlighter() {
   if (!highlighterPromise) {
-    highlighterPromise = createHighlighterCore({
-      engine: createJavaScriptRegexEngine(),
-      langs: SOURCE_LANGUAGE_REGISTRATIONS,
-      themes: THEME_REGISTRATIONS,
-    });
+    highlighterPromise = (async () => {
+      const engine = await createOnigurumaEngine(onigWasm);
+
+      return createHighlighterCore({
+        engine,
+        langs: SOURCE_LANGUAGE_REGISTRATIONS,
+        themes: THEME_REGISTRATIONS,
+      });
+    })();
   }
 
   return highlighterPromise;
