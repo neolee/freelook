@@ -61,7 +61,7 @@ Phase 2 should keep the JS side intentionally small and infrastructure-light.
 
 Recommended dependency set:
 
-- `shiki` v1.x with Oniguruma/WASM via the inline `shiki/wasm` module
+- `shiki` v4.x with Oniguruma/WASM via the inline `shiki/wasm` module
 - `markdown-it`
 - `@shikijs/markdown-it`
 - a small Markdown task-list plugin if needed to complete the practical GFM surface
@@ -170,7 +170,7 @@ Shiki's dual-theme CSS variable mechanism handles automatic `prefers-color-schem
 
 ### Bundled Themes
 
-Light: GitHub Light, One Light, Catppuccin Latte, Nord Light
+Light: GitHub Light, One Light, Catppuccin Latte
 Dark: GitHub Dark, One Dark Pro, Catppuccin Mocha, Nord
 
 The current theme list is sufficient for the initial renderer rollout. Expanding the theme catalog should only happen after the baseline HTML shell and representative sample files are visually approved.
