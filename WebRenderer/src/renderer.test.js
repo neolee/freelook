@@ -1,28 +1,76 @@
 import { describe, expect, test } from "bun:test";
 
-import { escapeHTML, installRenderer, renderPreview } from "./renderer.js";
+import {
+  escapeHTML,
+  installRenderer,
+  normalizeLanguageName,
+  normalizeThemeName,
+  renderPreview,
+} from "./renderer.js";
 
 describe("renderer bootstrap", () => {
   test("escapes HTML-sensitive characters", () => {
     expect(escapeHTML("<span>\"&\"</span>")).toBe("&lt;span&gt;&quot;&amp;&quot;&lt;/span&gt;");
   });
 
-  test("renders placeholder preview markup", () => {
-    const html = renderPreview({
-      content: "const value = 1 < 2;",
-      lang: "javascript",
-    });
-
-    expect(html).toContain("freelook-placeholder");
-    expect(html).toContain("data-lang=\"javascript\"");
-    expect(html).toContain("const value = 1 &lt; 2;");
+  test("normalizes supported source languages", () => {
+    expect(normalizeLanguageName("javascript")).toBe("javascript");
+    expect(normalizeLanguageName("text")).toBeNull();
+    expect(normalizeLanguageName("unknown")).toBeNull();
   });
 
-  test("installs the FreeLook global API", () => {
+  test("normalizes configured theme names", () => {
+    expect(normalizeThemeName("GitHub Light", "github-light")).toBe("github-light");
+    expect(normalizeThemeName("Nord Light", "github-light")).toBe("github-light");
+    expect(normalizeThemeName("Missing Theme", "github-dark")).toBe("github-dark");
+  });
+
+  test("renders source code with shiki", async () => {
+    const html = await renderPreview({
+      content: "const value = 1 < 2;\n",
+      lang: "javascript",
+      lightTheme: "GitHub Light",
+      darkTheme: "GitHub Dark",
+    });
+
+    expect(html).toContain("class=\"shiki");
+    expect(html).toContain("shiki-themes");
+    expect(html).toContain("--shiki-dark");
+    expect(html).toContain("const");
+  });
+
+  test("falls back to escaped plain text for unsupported languages", async () => {
+    const html = await renderPreview({
+      content: "plain <text>",
+      lang: "text",
+    });
+
+    expect(html).toContain("freelook-plain");
+    expect(html).toContain("plain &lt;text&gt;");
+  });
+
+  test("falls back to escaped plain text when a supported grammar cannot compile", async () => {
+    const html = await renderPreview({
+      content: "let value = 1\n",
+      lang: "swift",
+    });
+
+    expect(html).toContain("freelook-plain");
+    expect(html).toContain("data-lang=\"swift\"");
+    expect(html).toContain("let value = 1");
+  });
+
+  test("installs the FreeLook global API", async () => {
     const target = {};
     const api = installRenderer(target);
 
     expect(target.FreeLook).toBe(api);
-    expect(target.FreeLook.render({ content: "hello" })).toContain("<code>hello</code>");
+
+    const html = await target.FreeLook.render({
+      content: "print('hello')\n",
+      lang: "python",
+    });
+
+    expect(html).toContain("class=\"shiki");
   });
 });
