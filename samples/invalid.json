@@ -1,0 +1,10 @@
+{
+  "name": "FreeLook",
+  "kind": "quick-look-extension",
+  "features": [
+    "markdown",
+    "json",
+    "xml",
+  ],
+  "warning": "This file intentionally contains a trailing comma"
+}

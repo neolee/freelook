@@ -1,0 +1,12 @@
+<preview>
+  <app name="FreeLook">
+    <themes>
+      <light>GitHub Light</light>
+      <dark>GitHub Dark</dark>
+    </themes>
+    <formats>
+      <format>markdown</format>
+      <format>json</format>
+      <format>xml</format>
+    </formats>
+</preview>

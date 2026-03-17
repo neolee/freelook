@@ -4,7 +4,7 @@
 
 FreeLook is a macOS Quick Look Preview Extension that provides syntax-highlighted previews for developer file types: Markdown, JSON, XML, and source code in common programming languages. It is distributed via GitHub Releases (signed + notarized DMG) with Sparkle-based auto-update, not through the App Store.
 
-Every implementation step should be small enough to verify independently. The required gate after each step is: `./scripts/build` passes without warnings, all existing unit tests pass without warnings, the user confirms the result manually when applicable, and a version-control baseline is created before the next step starts.
+Phase 1 is complete. The remaining work should preserve the same gated workflow: every implementation step must be small enough to verify independently, `./scripts/build` must pass without warnings, all existing unit tests must pass without warnings, the user must confirm the result manually when applicable, and a version-control baseline must be created before the next step starts.
 
 ---
 
@@ -14,7 +14,7 @@ Every implementation step should be small enough to verify independently. The re
 
 Two targets inside `FreeLook/FreeLook.xcodeproj`:
 
-- `FreeLook` — host macOS app; provides the required container for the extension, a settings UI for theme selection, and the Sparkle update framework.
+- `FreeLook` — host macOS app; provides the required container for the extension, a settings UI for user preferences, and the Sparkle update framework.
 - `QuickLookExtension` — Quick Look Preview Extension; renders file content inside a `WKWebView`.
 
 Both targets share an App Group (`group.net.paradigmx.FreeLook`) for `UserDefaults` preference exchange.
@@ -29,7 +29,7 @@ Treat this entitlement as part of the baseline for any future WebKit-based previ
 
 ### JS Rendering Pipeline
 
-A standalone npm sub-project lives in `WebRenderer/` and is built separately with esbuild. Its output, `bundle.js`, is committed/copied into `QuickLookExtension/Resources/` and loaded by the extension's `WKWebView`.
+A standalone Bun-managed sub-project lives in `WebRenderer/` and is built separately with `esbuild`. Its output, `bundle.js`, is committed/copied into `QuickLookExtension/Resources/` and loaded by the extension's `WKWebView`.
 
 The renderer exposes a single entry point:
 
@@ -41,17 +41,107 @@ File-type routing inside the renderer:
 
 | `lang` value | Pipeline |
 |---|---|
-| `"markdown"` | markdown-it + @shikijs/markdown-it (code blocks highlighted inline) |
-| `"json"` | `JSON.parse` → `JSON.stringify(_, null, 2)` → Shiki `json` |
-| `"xml"` | xml-formatter → Shiki `xml` |
+| `"markdown"` | `markdown-it` with practical GFM support enabled, plus `@shikijs/markdown-it` for code blocks |
+| `"json"` | `JSON.parse` → `JSON.stringify(_, null, 2)` → Shiki `json`; on parse failure, show original source with a warning |
+| `"xml"` | `xml-formatter` → Shiki `xml`; on parse failure, show original source with a warning |
 | anything else | Shiki with the provided lang string |
+
+Markdown support should aim at the full practical GFM surface that is reasonable with the chosen libraries, including fenced code blocks, tables, task lists, autolinks, and strikethrough. If a specific GFM feature must be omitted because of library or safety constraints, that exception should be documented before implementation is considered complete.
+
+### JS Toolchain Selection
+
+Phase 2 should keep the JS side intentionally small and infrastructure-light.
+
+- package manager and script runner: `bun`
+- language: plain JavaScript with ESM modules
+- bundler: `esbuild`
+- unit test runner: `bun test`
+- runtime target: browser code running inside the extension's `WKWebView`
+- UI approach: framework-free rendering; no React, Vue, or other client framework
+
+Recommended dependency set:
+
+- `shiki` v1.x with `createJavaScriptRegexEngine()`
+- `markdown-it`
+- `@shikijs/markdown-it`
+- a small Markdown task-list plugin if needed to complete the practical GFM surface
+- `xml-formatter`
+- `esbuild`
+- `bun`
+
+Recommended non-goals for the first renderer phase:
+
+- no TypeScript unless the JS layer grows enough to justify extra tooling,
+- no DOM-heavy client framework,
+- no SSR or Node-specific rendering assumptions,
+- no separate runtime state-management layer.
+
+This is a deliberate trade-off. The job of renderer is narrow: transform file content into static HTML with syntax highlighting and a few warning states, then hand that result to the existing HTML shell. A framework would add more structure than value at this stage.
+
+Bun should be used for dependency installation, script execution, and JS tests. The final renderer code still runs inside `WKWebView`, so production code must not rely on Bun-specific runtime APIs or Node-only environment assumptions.
+
+For Markdown safety, keep raw HTML disabled in the initial renderer unless a later requirement explicitly justifies sanitization and support. Practical GFM support does not require enabling arbitrary embedded HTML.
 
 ### Swift ↔ WKWebView Contract
 
 1. `PreviewViewController` reads the file (`FileHandle`, UTF-8 then Latin-1 fallback, 500 KB cap — larger files show a truncation notice).
 2. `UTIMapper.swift` converts the file's `UTType` to a Shiki language identifier string.
-3. `SettingsStore` reads `lightTheme` and `darkTheme` from the shared App Group `UserDefaults`.
+3. `SettingsStore` reads preview preferences from the shared App Group `UserDefaults`.
 4. A string-interpolated `template.html` is passed to `loadHTMLString(_:baseURL:)`; `baseURL` points to the extension's `Resources/` bundle directory so that relative paths to `bundle.js` and `styles.css` resolve correctly.
+
+---
+
+## Preview Design Baseline
+
+The HTML shell is a product surface, not a throwaway integration detail. Visual decisions that affect reading comfort should be established before full renderer rollout, not postponed to the final polish pass.
+
+### Design goals
+
+- The preview should feel calm, compact, and durable for daily use.
+- The content should remain visually subordinate to the file itself; decorative chrome should be restrained.
+- Light and dark mode should share one spacing and typography system even though syntax colors come from different Shiki themes.
+
+### Baseline design tokens to settle early
+
+- typography:
+  - body text font stack,
+  - code font stack,
+  - base font size,
+  - line height,
+  - heading scale,
+  - inline code treatment
+- layout:
+  - maximum readable width,
+  - outer padding,
+  - vertical rhythm,
+  - code block padding,
+  - table overflow behavior
+- states:
+  - loading,
+  - truncation notice,
+  - parse warning,
+  - unreadable-encoding fallback,
+  - generic error state
+
+The first renderer-facing HTML/CSS milestone should produce a stable visual baseline for:
+
+- plain code files,
+- Markdown prose with code blocks,
+- prettified JSON,
+- prettified XML,
+- parse-failure warning states.
+
+### Settings scope discipline
+
+The host app settings UI should not drive early visual decisions. The preview surface comes first; the host settings panel can land later once the supported preference set is stable and the reusable assets already exist.
+
+For v1, user-facing settings should be grouped conceptually as:
+
+- `Appearance` — theme choices and any later visual density controls
+- `Reading` — typography-related controls that are explicitly approved
+- `Behavior` — non-visual preferences such as quitting after the last window closes
+
+Do not expose arbitrary font-family selection early. That setting has disproportionate visual impact and should only be added once the default typography system is already approved.
 
 ---
 
@@ -59,12 +149,42 @@ File-type routing inside the renderer:
 
 Users independently choose one light theme and one dark theme in the host app settings. The selected theme names are stored in App Group `UserDefaults` under the keys `lightTheme` and `darkTheme`.
 
-Shiki's dual-theme CSS variable mechanism handles automatic `prefers-color-scheme` switching at render time — no JavaScript theme-switching is performed after initial render.
+Shiki's dual-theme CSS variable mechanism handles automatic `prefers-color-scheme` switching at render time. FreeLook should not add a second theme-switching layer in JavaScript after initial render unless a later validated requirement makes it necessary.
 
 ### Bundled Themes
 
 Light: GitHub Light, One Light, Catppuccin Latte, Nord Light
 Dark: GitHub Dark, One Dark Pro, Catppuccin Mocha, Nord
+
+The current theme list is sufficient for the initial renderer rollout. Expanding the theme catalog should only happen after the baseline HTML shell and representative sample files are visually approved.
+
+---
+
+## Sample Corpus
+
+FreeLook should keep a committed sample corpus in the repository so the same files can be reused for:
+
+- visual design review,
+- manual Quick Look verification,
+- host-app preview verification once that UI exists,
+- future renderer smoke checks,
+- selected unit-test fixtures where file-backed inputs are appropriate.
+
+The committed sample corpus should prioritize representative, human-reviewable files:
+
+- a Markdown showcase document,
+- valid and invalid JSON,
+- valid and invalid XML,
+- representative source files for Swift, Python, JavaScript, and shell script,
+- at least one long-line file for overflow review.
+
+Some edge cases are better generated by tests instead of committed as static files:
+
+- oversized files around the 500 KB cap,
+- non-UTF-8 encoding fixtures such as Latin-1,
+- pathological whitespace or deeply nested stress cases that are useful for parser or loader testing but not for normal design review.
+
+The initial committed corpus should live in `samples/` at the repository root so it remains easy to reference from docs, tests, and manual validation steps.
 
 ---
 
@@ -72,19 +192,48 @@ Dark: GitHub Dark, One Dark Pro, Catppuccin Mocha, Nord
 
 The extension's current `QLSupportedContentTypes` list is the FreeLook v1.0 baseline whitelist and should be treated as the starting point for validation, not as a random placeholder.
 
-Do not assume that a parent type such as `public.source-code` is sufficient to reliably claim all descendant source-file types. The registration strategy is to cover the semantically valid `UTType` candidates that important extensions resolve to on real systems, while avoiding polluted or low-quality identifiers that happen to appear in LaunchServices. This must still be established by explicit Quick Look experiments during Phase 4 and should be documented with representative findings for Swift, Markdown, JSON, XML, and at least one additional source-code subtype.
+Do not assume that a parent type such as `public.source-code` is sufficient to reliably claim all descendant source-file types. The registration strategy is to cover the semantically valid `UTType` candidates that important extensions resolve to on real systems, while avoiding polluted or low-quality identifiers that happen to appear in LaunchServices. This must still be established by explicit Quick Look experiments and should be documented with representative findings for Swift, Markdown, JSON, XML, and at least one additional source-code subtype.
 
 Keep all file-type registration declarations in `QuickLookExtension/Info.plist`, including `CFBundleDocumentTypes`, `UTImportedTypeDeclarations`, `UTExportedTypeDeclarations`, and `QLSupportedContentTypes`. The current validated baseline does not require matching file-type declarations in the host app `Info.plist`.
 
 When an important developer-facing extension falls back to an opaque `dyn.*` identifier, prefer testing a product-owned exported UTI that conforms to the relevant semantic parent type and is claimed directly in `QLSupportedContentTypes`.
 
-The detailed LaunchServices and `UTType` findings now live in `docs/uti.md`. That document is the source of truth for:
+The detailed LaunchServices and `UTType` findings live in `docs/uti.md`. That document is the source of truth for:
 
 - how file extensions are resolved to preferred `UTType`s on the current system,
 - how third-party apps can pollute the candidate set for a tag such as `md`,
 - why FreeLook should try to claim the reasonable candidate `UTType`s for an extension rather than every identifier that appears in the candidate set,
 - which local cleanup steps were validated during diagnosis, and
 - which command-line probes are useful when preview routing behaves unexpectedly.
+
+---
+
+## Verification Strategy
+
+FreeLook needs both unit-test confidence and early visible results. The plan should therefore distinguish clearly between behavior that is primarily programmatic and behavior that is primarily visual.
+
+### Unit-test-first surfaces
+
+- `UTType` to renderer-language mapping
+- bounded file loading, truncation, and decoding fallbacks
+- settings normalization and persistence rules
+- renderer input shaping on the Swift side
+- warning/fallback branching where the logic is deterministic and easy to isolate
+
+### Manual-review-first surfaces
+
+- typography and spacing quality
+- code block readability
+- table overflow behavior
+- contrast and emphasis in light and dark appearances
+- warning and error state tone
+- how Markdown, JSON, XML, and code feel as reading surfaces rather than just parsed outputs
+
+### Review artifacts to keep stable during development
+
+- the committed sample corpus in `samples/`
+- a short manual review checklist for representative file types and states
+- the current theme list and preview sample choices
 
 ---
 
@@ -108,7 +257,7 @@ Required setup:
 │   ├── FreeLook/                      host app source
 │   │   ├── FreeLookApp.swift          app entry
 │   │   ├── AppDelegate.swift          close-last-window termination hook
-│   │   ├── ContentView.swift          minimal settings window
+│   │   ├── ContentView.swift          settings window UI
 │   │   ├── SettingsStore.swift        ObservableObject, App Group UserDefaults
 │   │   ├── Assets.xcassets/
 │   │   └── FreeLook.entitlements
@@ -120,15 +269,16 @@ Required setup:
 │   │   ├── Info.plist
 │   │   ├── QuickLookExtension.entitlements
 │   │   └── Resources/
-│   │       ├── template.html            (to be added)
+│   │       ├── template.html            local HTML shell
 │   │       ├── bundle.js                built artifact from WebRenderer/
-│   │       └── styles.css               (to be added)
+│   │       └── styles.css               shared preview styles
 │   ├── Tests/
 │   │   ├── UTIMapperTests.swift
 │   │   ├── PreviewFileLoaderTests.swift
 │   │   └── SettingsStoreTests.swift
 │   └── FreeLook.xcodeproj
-├── WebRenderer/                       JS sub-project (to be created)
+├── samples/                           committed review and test corpus
+├── WebRenderer/                       JS sub-project
 │   ├── src/
 │   │   └── renderer.js
 │   ├── package.json
@@ -139,7 +289,8 @@ Required setup:
 │   ├── plan.md
 │   └── uti.md
 ├── scripts/
-│   └── build
+│   ├── build
+│   └── test
 └── .github/
     └── workflows/
         └── release.yml
@@ -149,133 +300,112 @@ Required setup:
 
 ## Implementation Phases
 
-The original phase boundaries are still correct, but several items were too large for the required build-test-review-baseline workflow. The phase breakdown below splits each phase into smaller implementation steps that should each fit in one checkpoint.
+The remaining work should optimize for early visual validation without sacrificing small, gated steps.
 
-### Phase 1 — Project Skeleton
+### Phase 2 — Preview Surface Baseline
 
-1.1 Baseline skeleton
-- Confirm the Xcode project skeleton, both targets, the `Tests` target, App Group entitlement, and deletion of the unused template preview files.
-- Verification gate: clean `./scripts/build`; unit tests; user confirms the repository baseline.
+2.1 Committed sample corpus
+- Add `samples/` with the initial committed review corpus: Markdown showcase, valid/invalid JSON, valid/invalid XML, representative source files, and a long-line sample.
+- Keep oversized and non-UTF-8 fixtures out of the committed corpus for now; generate those in tests when needed.
+- Verification gate: clean build; full unit test suite; user confirms the sample set is representative enough for ongoing design review.
 
-1.2 Programmatic preview container
-- Replace the nib-based extension view with a full-safe-area programmatic `WKWebView` shell in `PreviewViewController`.
-- Keep the first pass focused on layout and loading-state plumbing only; do not mix in file parsing or JS rendering yet.
-- Verification gate: clean build; unit tests; user manually confirms the extension loads the new container without layout regressions.
-
-1.3 `UTI` mapping and tests
-- Implement `UTIMapper.swift` with `UTType` → `Shiki` language mappings.
-- Keep `Tests/UTIMapperTests.swift` aligned with the supported mapping surface and add representative coverage for Markdown, JSON, XML, Swift, Python, JavaScript, shell script, and generic source code.
-- Verification gate: clean build; full unit test suite; user confirms the tested mapping surface is sufficient before moving on.
-
-1.4 Bounded file loading
-- Implement file reading with UTF-8 first, Latin-1 fallback, and a 500 KB cap.
-- If useful, extract decoding/size-limit helpers so they can be tested directly.
-- Verification gate: clean build; full unit test suite; user manually checks at least one small file and one oversized file path.
-
-1.5 Shared settings persistence
-- Add `SettingsStore.swift` and wire App Group `UserDefaults` round-trip for `lightTheme` and `darkTheme`.
-- Keep this step limited to persistence and model code; defer the full UI to Phase 3.
-- Verification gate: clean build; full unit test suite; user confirms settings persist across relaunches or extension reloads.
-
-### Phase 2 — JS Rendering Pipeline
-
-2.1 Renderer project bootstrap
+2.2 Renderer project bootstrap
 - Create `WebRenderer/` with `package.json`, `esbuild.config.mjs`, and the initial `src/renderer.js` entry point.
-- Install and pin `shiki`, `markdown-it`, `@shikijs/markdown-it`, `xml-formatter`, and `esbuild`.
+- Use Bun for dependency installation and scripts, and install/pin `shiki`, `markdown-it`, `@shikijs/markdown-it`, `xml-formatter`, and `esbuild`.
 - Verification gate: clean native build; full unit test suite; user reviews the JS project scaffold before renderer logic is added.
 
-2.2 Core renderer implementation
-- Implement file-type routing in `renderer.js`.
-- Initialize `Shiki` with `createJavaScriptRegexEngine()` and configure the bundled light/dark theme set.
-- Verification gate: clean native build; full unit test suite; user reviews the JS implementation before asset bundling.
+2.3 HTML shell and design tokens
+- Add `template.html` and `styles.css` as first-class product assets rather than last-minute polish files.
+- Establish the baseline typography, spacing, width, and state styling using the committed sample corpus as the review surface.
+- Keep this step focused on the HTML/CSS shell and static sample rendering shape; do not mix in all format-specific parsing behavior yet.
+- Verification gate: clean build; full unit test suite; user manually reviews the visual baseline before format pipelines are added.
 
-2.3 Bundled extension resources
-- Build `bundle.js` and add it to `QuickLookExtension/Resources/`.
-- Add `template.html` and `styles.css` so the extension has a stable local HTML shell for the renderer.
-- Verification gate: clean build; full unit test suite; user confirms the bundled resources are present and versioned correctly.
+### Phase 3 — Renderer Rollout by Content Type
 
-2.4 Swift-to-renderer integration
-- Pass file contents, lang, and selected themes from Swift into the HTML template.
-- Verify end-to-end rendering for Markdown, JSON, XML, and representative source files.
-- Verification gate: clean build; full unit test suite; user manually validates rendering output in Quick Look before Phase 3 starts.
+3.1 Core source-code rendering
+- Implement the base `Shiki` pipeline in `renderer.js` with `createJavaScriptRegexEngine()` and the bundled theme set.
+- Verify representative source files from the sample corpus first.
+- Verification gate: clean native build; full unit test suite; user confirms the baseline code-reading surface.
 
-### Phase 3 — Theme Settings UI
+3.2 Markdown rendering
+- Implement Markdown rendering with practical GFM support using `markdown-it` and `@shikijs/markdown-it`.
+- Validate headings, paragraphs, fenced code blocks, tables, task lists, strikethrough, blockquotes, and links using the Markdown showcase sample.
+- Verification gate: clean native build; full unit test suite; user manually reviews Markdown rendering quality.
 
-3.1 Theme catalog and preview sample
-- Finalize the theme list exposed by `SettingsStore` and the sample content used for previews.
-- Verification gate: clean build; full unit test suite; user confirms the theme catalog and sample snippet.
+3.3 JSON rendering
+- Implement `JSON.parse` → `JSON.stringify(_, null, 2)` → `Shiki` `json`.
+- On parse failure, display the original source instead of an empty or broken preview, and add a clear but restrained warning.
+- Verification gate: clean native build; full unit test suite; user manually reviews both valid and invalid JSON behavior.
 
-3.2 Settings UI
-- Implement `SettingsView` with independent light/dark theme pickers.
-- Keep this step focused on UI structure and persistence bindings.
-- Verification gate: clean build; full unit test suite; user confirms the settings UI layout and interaction model.
+3.4 XML rendering
+- Implement `xml-formatter` → `Shiki` `xml`.
+- On parse failure, display the original source instead of an empty or broken preview, and add a clear but restrained warning.
+- Verification gate: clean native build; full unit test suite; user manually reviews both valid and invalid XML behavior.
 
-3.3 Live preview and propagation
-- Add the live preview `WKWebView` in the host app and verify changes propagate to the extension on the next preview.
-- Verification gate: clean build; full unit test suite; user manually checks theme changes in both the host app preview and Quick Look.
+3.5 Swift-to-renderer integration
+- Pass file contents, language identifier, and selected themes from Swift into the HTML template and renderer bundle.
+- Verify end-to-end rendering for the committed sample corpus inside Quick Look.
+- Verification gate: clean build; full unit test suite; user manually validates end-to-end preview output before host-app UI work starts.
 
-### Phase 4 — Polish
+### Phase 4 — Host App Preferences
 
-4.1 UTI registration
+4.1 Settings surface definition
+- Finalize which settings are in scope for v1 and group them under `Appearance`, `Reading`, and `Behavior`.
+- Keep theme selection as the only guaranteed visual preference unless later controls are explicitly approved.
+- Verification gate: clean build; full unit test suite; user confirms the v1 settings surface before UI design starts.
+
+4.2 Settings UI
+- Implement the host app settings UI around the finalized settings surface.
+- Reuse the already approved preview visual language and assets where appropriate.
+- Verification gate: clean build; full unit test suite; user confirms the settings layout and interaction model.
+
+4.3 Preview panel and propagation
+- Add the host-app preview panel only after the settings set is stable.
+- Verify that changing preferences updates the host preview and propagates to the Quick Look extension on the next preview.
+- Verification gate: clean build; full unit test suite; user manually checks preference propagation in both places.
+
+### Phase 5 — Product Hardening and Polish
+
+5.1 UTI registration
 - Finalize the supported UTI list in `QuickLookExtension/Info.plist` using explicit Quick Look experiments instead of assumptions about parent-type coverage.
 - Test representative file types to confirm the extension is triggered reliably and record any system-owned fallbacks or tie-break behaviors.
 - Verification gate: clean build; full unit test suite; user manually confirms file association behavior.
 
-4.2 Error and fallback states
-- Add explicit UI states for unreadable encoding and oversized files.
-- Verification gate: clean build; full unit test suite; user manually validates the error states.
+5.2 Error and fallback states
+- Refine explicit UI states for unreadable encoding, oversized files, and renderer parse warnings.
+- Ensure these states match the approved visual system rather than looking like ad hoc debug output.
+- Verification gate: clean build; full unit test suite; user manually validates the fallback states.
 
-4.3 Typography and reading comfort
-- Refine font size, line height, padding, and optional line numbers.
-- Verification gate: clean build; full unit test suite; user reviews readability before additional polish.
+5.3 Reading comfort refinements
+- Revisit font size, line height, padding, code-block density, and any approved reading controls after the main format pipelines are already stable.
+- Optional line numbers, if explored, should be treated as a product decision rather than an automatic addition.
+- Verification gate: clean build; full unit test suite; user reviews readability before additional polish is added.
 
-4.4 Product polish assets
+5.4 Product polish assets
 - Deliver the remaining product-facing assets such as the About window and bundled open-source license list.
 - `AppIcon` can be completed independently once the asset catalog is stable; it does not need to block the runtime implementation path.
 - Verification gate: clean build; full unit test suite; user signs off on the product polish set.
 
-### Phase 5 — Release
+### Phase 6 — Release
 
-5.1 Sparkle target integration
+6.1 Sparkle target integration
 - Add Sparkle to the `FreeLook` target and wire the host app updater setup.
 - Verification gate: clean build; full unit test suite; user confirms updater integration scope before release configuration.
 
-5.2 Export configuration
+6.2 Export configuration
 - Create `exportOptions.plist` for Developer ID export.
 - Verification gate: clean build; full unit test suite; user reviews export settings.
 
-5.3 Signing metadata
+6.3 Signing metadata
 - Generate the Sparkle EdDSA key pair, add the public key to `Info.plist`, store the private key in GitHub Secrets, and set `SUFeedURL`.
 - Verification gate: clean build; full unit test suite; user confirms release metadata values before CI changes are relied on.
 
-5.4 CI release validation
+6.4 CI release validation
 - Verify the GitHub Actions workflow end to end: archive, export, notarize, staple, DMG, appcast update, and GitHub Release creation.
 - Verification gate: clean build; full unit test suite; user confirms the release pipeline behavior.
 
-5.5 End-user installation docs
+6.5 End-user installation docs
 - Write `README.md` installation instructions, including the first-launch Gatekeeper bypass flow.
 - Verification gate: clean build; full unit test suite; user reviews the release documentation before the first public release.
 
 ---
-
-## Key Dependencies
-
-| Dependency | Version constraint | Purpose |
-|---|---|---|
-| Sparkle | ^2.x | Auto-update framework (SPM) |
-| shiki | ^1.x | Syntax highlighting (JS engine, no WASM) |
-| markdown-it | ^14.x | Markdown parsing |
-| @shikijs/markdown-it | ^1.x | Shiki integration for markdown-it |
-| xml-formatter | ^3.x | XML pretty-printing |
-| esbuild | ^0.24.x | JS bundle build tool |
-
----
-
-## Constraints and Decisions
-
-- **No WASM**: Shiki is initialized with `createJavaScriptRegexEngine()` to avoid WebAssembly binary loading inside the sandboxed App Extension.
-- **No App Store**: distribution is Developer ID signed + notarized DMG via GitHub Releases only.
-- **Sparkle auto-update**: `appcast.xml` lives in the repo root and is updated by CI on every tagged release.
-- **min macOS 14.6 Sonoma**: enables modern SwiftUI APIs and CSS `light-dark()`.
-- **500 KB file cap**: prevents the Quick Look extension from hitting sandbox memory limits on very large files.
-- **Single extension, multiple UTIs**: one `FreeLookExtension` target covers all supported file types; no per-format split.

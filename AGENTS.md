@@ -24,11 +24,12 @@ Reference for AI coding agents working on this codebase. Keep this file concise,
 - For file-type coverage, reason in terms of resolved `UTType`s, not filename extensions alone. The practical goal is to claim the semantically valid `UTType` candidates that a target extension may resolve to, while explicitly avoiding polluted or low-quality identifiers that are not acceptable product surface.
 - Keep all file-type registration declarations in `QuickLookExtension/Info.plist`, including `CFBundleDocumentTypes`, `UTImportedTypeDeclarations`, `UTExportedTypeDeclarations`, and `QLSupportedContentTypes`. The current validated baseline is that the tested registration surface works from the Quick Look extension bundle itself and does not require matching declarations in the host app `Info.plist`.
 - When LaunchServices behavior is ambiguous, prefer negative-control experiments that remove a declaration and verify the fallback path before attributing the result to cache or stale registration state.
-- JS renderer sub-project: `WebRenderer/` (npm + esbuild). It is **not** part of the Xcode build; run it separately when changing `renderer.js`. The built artifact `bundle.js` lives at `QuickLookExtension/Resources/bundle.js`.
+- JS renderer sub-project: `WebRenderer/` (Bun for package management, script execution, and JS tests; `esbuild` for browser bundling). It is **not** part of the Xcode build; run it separately when changing `renderer.js`. The built artifact `bundle.js` lives at `QuickLookExtension/Resources/bundle.js`.
 - Syntax highlighting: Shiki v1.x with `createJavaScriptRegexEngine()` — no WASM.
 - Markdown: markdown-it + @shikijs/markdown-it plugin.
 - JSON pretty-printing: native `JSON.stringify(JSON.parse(src), null, 2)` piped into Shiki with `lang: 'json'`.
 - XML pretty-printing: xml-formatter piped into Shiki with `lang: 'xml'`.
+- The renderer bundle runs in `WKWebView`, so production renderer code must stay browser-compatible and must not depend on Bun-specific runtime APIs.
 - User theme preferences stored in App Group `UserDefaults` under keys `lightTheme` and `darkTheme`.
 - Do not add new Xcode targets without discussing with the user first.
 
@@ -51,7 +52,7 @@ Run from repo root:
 - If tooling returns empty or missing output, stop and ask the user to verify manually.
 - To rebuild `bundle.js` after changing `WebRenderer/src/renderer.js`:
   ```shell
-  cd WebRenderer && npm run build
+  cd WebRenderer && bun run build
   ```
   Then copy the output into `QuickLookExtension/Resources/bundle.js`.
 
