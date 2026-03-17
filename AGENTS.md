@@ -31,7 +31,7 @@ Reference for AI coding agents working on this codebase. Keep this file concise,
 - JSON pretty-printing: native `JSON.stringify(JSON.parse(src), null, 2)` piped into Shiki with `lang: 'json'`.
 - XML pretty-printing: xml-formatter piped into Shiki with `lang: 'xml'`.
 - The renderer bundle runs in `WKWebView`, so production renderer code must stay browser-compatible and must not depend on Bun-specific runtime APIs.
-- User theme preferences stored in App Group `UserDefaults` under keys `lightTheme` and `darkTheme`.
+- User theme preferences stored in App Group `UserDefaults` under keys `lightTheme` and `darkTheme`; supported theme metadata lives in `QuickLookExtension/Resources/Themes.json`.
 - Do not add new Xcode targets without discussing with the user first.
 
 ---
@@ -63,7 +63,7 @@ Run from repo root:
 
 - The app UI is English-only; no formal localization (`Localizable.strings`) is needed.
 - Do not wrap strings in `NSLocalizedString` speculatively.
-- Theme names are display strings defined in `SettingsStore.swift`; they are not localized.
+- Theme names are display strings defined in `QuickLookExtension/Resources/Themes.json`; they are not localized.
 
 ---
 

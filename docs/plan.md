@@ -37,6 +37,21 @@ The renderer exposes a single entry point:
 FreeLook.render({ content, lang, lightTheme, darkTheme })
 ```
 
+and returns a structured result:
+
+```js
+{
+  html,
+  notice,
+  surface: {
+    lightBackground,
+    lightForeground,
+    darkBackground,
+    darkForeground,
+  },
+}
+```
+
 File-type routing inside the renderer:
 
 | `lang` value | Pipeline |
@@ -89,7 +104,9 @@ For Markdown safety, keep raw HTML disabled in the initial renderer unless a lat
 1. `PreviewViewController` reads the file (`FileHandle`, UTF-8 then Latin-1 fallback, 500 KB cap — larger files show a truncation notice).
 2. `UTIMapper.swift` converts the file's `UTType` to a Shiki language identifier string.
 3. `SettingsStore` reads preview preferences from the shared App Group `UserDefaults`.
-4. A string-interpolated `template.html` is passed to `loadHTMLString(_:baseURL:)`; `baseURL` points to the extension's `Resources/` bundle directory so that relative paths to `bundle.js` and `styles.css` resolve correctly.
+4. `Settings.swift` loads the theme manifest from `QuickLookExtension/Resources/Themes.json`; the host app bundles the same file via an alias so both targets share one theme source of truth.
+5. A string-interpolated `template.html` is passed to `loadHTMLString(_:baseURL:)`; `baseURL` points to the extension's `Resources/` bundle directory so that relative paths to `bundle.js` and `styles.css` resolve correctly.
+6. The inline page script calls `FreeLook.render(...)`, then applies `html`, `notice`, and `surface` separately. Swift no longer scrapes `.shiki` DOM state to infer page colors.
 
 ---
 
@@ -152,13 +169,12 @@ The first renderer-facing HTML/CSS milestone should produce a stable visual base
 
 The host app settings UI should not drive early visual decisions. The preview surface comes first; the host settings panel can land later once the supported preference set is stable and the reusable assets already exist.
 
-For v1, user-facing settings should be grouped conceptually as:
+The current v1 settings surface is intentionally small:
 
-- `Appearance` — theme choices and any later visual density controls
-- `Reading` — typography-related controls that are explicitly approved
-- `Behavior` — non-visual preferences such as quitting after the last window closes
+- `Theme` — mode (`Follow System`, `Always Light`, `Always Dark`) plus independent light and dark theme selection
+- `Typography` — code font and code font size
 
-Do not expose arbitrary font-family selection early. That setting has disproportionate visual impact and should only be added once the default typography system is already approved.
+Closing the last window now terminates the app as fixed product behavior rather than a user setting.
 
 ---
 
@@ -281,14 +297,15 @@ Required setup:
 │   ├── QuickLookExtension/
 │   │   ├── PreviewViewController.swift  WKWebView preview shell
 │   │   ├── FileLoader.swift             bounded file loading + decoding
-│   │   ├── Settings.swift               shared App Group keys/defaults
+│   │   ├── Settings.swift               shared App Group keys/defaults + theme manifest loader
 │   │   ├── UTIMapper.swift              UTType -> renderer language mapping
 │   │   ├── Info.plist
 │   │   ├── QuickLookExtension.entitlements
 │   │   └── Resources/
 │   │       ├── template.html            local HTML shell
 │   │       ├── bundle.js                built artifact from WebRenderer/
-│   │       └── styles.css               shared preview styles
+│   │       ├── styles.css               shared preview styles
+│   │       └── Themes.json              single source of truth for supported themes
 │   ├── Tests/
 │   │   ├── UTIMapperTests.swift
 │   │   ├── FileLoaderTests.swift
@@ -345,6 +362,16 @@ The remaining work should optimize for early visual validation without sacrifici
 - Verify representative source files from the sample corpus first.
 - Verification gate: clean native build; full unit test suite; user confirms the baseline code-reading surface.
 
+Status: completed.
+
+3.1a Renderer contract hardening
+- Return structured renderer results (`html`, `notice`, `surface`) instead of bare HTML.
+- Use `Themes.json` as the single source of truth for supported theme metadata across Swift and JS.
+- Remove DOM scraping of `.shiki` styles from Swift; surface colors now come from the renderer contract.
+- Verification gate: clean native build; full unit test suite; user confirms that themes, fixed appearance mode, and typography still behave correctly.
+
+Status: completed.
+
 3.2 Markdown rendering
 - Implement Markdown rendering with practical GFM support using `markdown-it` and `@shikijs/markdown-it`.
 - Validate headings, paragraphs, fenced code blocks, tables, task lists, strikethrough, blockquotes, and links using the Markdown showcase sample.
@@ -360,27 +387,28 @@ The remaining work should optimize for early visual validation without sacrifici
 - On parse failure, display the original source instead of an empty or broken preview, and add a clear but restrained warning.
 - Verification gate: clean native build; full unit test suite; user manually reviews both valid and invalid XML behavior.
 
-3.5 Swift-to-renderer integration
-- Pass file contents, language identifier, and selected themes from Swift into the HTML template and renderer bundle.
-- Verify end-to-end rendering for the committed sample corpus inside Quick Look.
-- Verification gate: clean build; full unit test suite; user manually validates end-to-end preview output before host-app UI work starts.
-
 ### Phase 4 — Host App Preferences
 
 4.1 Settings surface definition
-- Finalize which settings are in scope for v1 and group them under `Appearance`, `Reading`, and `Behavior`.
-- Keep theme selection as the only guaranteed visual preference unless later controls are explicitly approved.
+- Finalize which settings are in scope for v1 and keep the surface small enough to preserve visual coherence.
+- The currently approved baseline is `Theme` plus `Typography`; future additions should be justified individually rather than added by category.
 - Verification gate: clean build; full unit test suite; user confirms the v1 settings surface before UI design starts.
+
+Status: completed.
 
 4.2 Settings UI
 - Implement the host app settings UI around the finalized settings surface.
 - Reuse the already approved preview visual language and assets where appropriate.
 - Verification gate: clean build; full unit test suite; user confirms the settings layout and interaction model.
 
+Status: completed.
+
 4.3 Preview panel and propagation
 - Add the host-app preview panel only after the settings set is stable.
 - Verify that changing preferences updates the host preview and propagates to the Quick Look extension on the next preview.
 - Verification gate: clean build; full unit test suite; user manually checks preference propagation in both places.
+
+Status: not started. The dedicated host-app preview panel remains optional and is intentionally deferred.
 
 ### Phase 5 — Product Hardening and Polish
 

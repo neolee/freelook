@@ -10,7 +10,6 @@ import Foundation
 struct FileLoadResult {
     let content: String
     let didTruncate: Bool
-    let encodingName: String
 }
 
 enum FileLoaderError: LocalizedError {
@@ -51,15 +50,15 @@ enum FileLoader {
         let previewData = Data(didTruncate ? rawData.prefix(maximumPreviewBytes) : rawData)
 
         if let content = String(data: previewData, encoding: .utf8) {
-            return FileLoadResult(content: content, didTruncate: didTruncate, encodingName: "UTF-8")
+            return FileLoadResult(content: content, didTruncate: didTruncate)
         }
 
         if didTruncate, let content = utf8ContentDroppingIncompleteTail(from: previewData) {
-            return FileLoadResult(content: content, didTruncate: didTruncate, encodingName: "UTF-8")
+            return FileLoadResult(content: content, didTruncate: didTruncate)
         }
 
         if let content = String(data: previewData, encoding: .isoLatin1) {
-            return FileLoadResult(content: content, didTruncate: didTruncate, encodingName: "ISO Latin 1")
+            return FileLoadResult(content: content, didTruncate: didTruncate)
         }
 
         throw FileLoaderError.unsupportedEncoding

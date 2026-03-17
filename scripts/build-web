@@ -5,8 +5,6 @@ REPO_DIR=$(cd "$(dirname "$0")/.." && pwd)
 RESOURCES_DIR="$REPO_DIR/FreeLook/QuickLookExtension/Resources"
 
 cd "$REPO_DIR/WebRenderer"
-rm -f dist/onig.wasm
 bun run build
 
-rm -f "$RESOURCES_DIR/onig.wasm"
 cp dist/bundle.js "$RESOURCES_DIR/bundle.js"

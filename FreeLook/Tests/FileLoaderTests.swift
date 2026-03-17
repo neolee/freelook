@@ -15,7 +15,6 @@ struct FileLoaderTests {
         let result = try FileLoader.loadPreview(for: url)
 
         #expect(result.content == "print(\"FreeLook\")")
-        #expect(result.encodingName == "UTF-8")
         #expect(result.didTruncate == false)
     }
 
@@ -26,7 +25,6 @@ struct FileLoaderTests {
         let result = try FileLoader.loadPreview(for: url)
 
         #expect(result.content == "café")
-        #expect(result.encodingName == "ISO Latin 1")
         #expect(result.didTruncate == false)
     }
 
@@ -37,7 +35,6 @@ struct FileLoaderTests {
         let result = try FileLoader.loadPreview(for: url)
 
         #expect(result.didTruncate == true)
-        #expect(result.encodingName == "UTF-8")
         #expect(result.content.count == FileLoader.maximumPreviewBytes)
         #expect(result.content.hasPrefix("aaaa"))
     }
@@ -50,7 +47,6 @@ struct FileLoaderTests {
         let result = try FileLoader.loadPreview(for: url)
 
         #expect(result.didTruncate == true)
-        #expect(result.encodingName == "UTF-8")
         #expect(result.content.utf8.count <= FileLoader.maximumPreviewBytes)
         #expect(result.content == String(repeating: "€", count: FileLoader.maximumPreviewBytes / 3))
     }
