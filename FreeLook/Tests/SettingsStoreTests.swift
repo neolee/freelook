@@ -24,23 +24,23 @@ struct SettingsStoreTests {
         let previewAppearanceMode = SettingsStore.previewAppearanceModeOptions[2]
         let lightTheme = SettingsStore.lightThemeOptions[1]
         let darkTheme = SettingsStore.darkThemeOptions[2]
-        let codeFont = SettingsStore.codeFontOptions.dropFirst().first ?? SettingsStore.defaultCodeFont
-        let codeFontSize = 17
+        let selectedCodeFont = SettingsStore.codeFontOptions.dropFirst().first ?? SettingsStore.defaultCodeFont
+        let selectedCodeFontSize = 17
 
         let store = SettingsStore(userDefaults: defaults)
         store.previewAppearanceMode = previewAppearanceMode
         store.lightTheme = lightTheme
         store.darkTheme = darkTheme
-        store.codeFont = codeFont
-        store.codeFontSize = codeFontSize
+        store.selectedCodeFont = selectedCodeFont
+        store.selectedCodeFontSize = selectedCodeFontSize
 
         let reloadedStore = SettingsStore(userDefaults: defaults)
 
         #expect(reloadedStore.previewAppearanceMode == previewAppearanceMode)
         #expect(reloadedStore.lightTheme == lightTheme)
         #expect(reloadedStore.darkTheme == darkTheme)
-        #expect(reloadedStore.codeFont == codeFont)
-        #expect(reloadedStore.codeFontSize == codeFontSize)
+        #expect(reloadedStore.selectedCodeFont == selectedCodeFont)
+        #expect(reloadedStore.selectedCodeFontSize == selectedCodeFontSize)
     }
 
     @Test func normalizesInvalidPersistedValues() {
@@ -56,8 +56,8 @@ struct SettingsStoreTests {
         #expect(store.previewAppearanceMode == SettingsStore.defaultPreviewAppearanceMode)
         #expect(store.lightTheme == SettingsStore.defaultLightTheme)
         #expect(store.darkTheme == SettingsStore.defaultDarkTheme)
-        #expect(store.codeFont == SettingsStore.defaultCodeFont)
-        #expect(store.codeFontSize == SettingsStore.defaultCodeFontSize)
+        #expect(store.selectedCodeFont == SettingsStore.defaultCodeFont)
+        #expect(store.selectedCodeFontSize == SettingsStore.defaultCodeFontSize)
     }
 
     private func temporaryDefaults() -> UserDefaults {

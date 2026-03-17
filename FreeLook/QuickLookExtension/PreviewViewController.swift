@@ -63,7 +63,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
                     previewAppearanceMode: appearanceSnapshot.previewAppearanceMode,
                     lightTheme: appearanceSnapshot.lightTheme,
                     darkTheme: appearanceSnapshot.darkTheme,
-                    codeFont: appearanceSnapshot.codeFont,
+                    codeFontName: appearanceSnapshot.codeFontName,
                     codeFontSize: appearanceSnapshot.codeFontSize
                 )
             }
@@ -101,7 +101,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         previewAppearanceMode: String,
         lightTheme: String,
         darkTheme: String,
-        codeFont: String,
+        codeFontName: String,
         codeFontSize: Int
     ) {
         let truncationNotice = preview.didTruncate
@@ -191,7 +191,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             pageTitle: fileName,
             bodyClass: .preview,
             bodyAppearance: previewAppearanceToken(for: previewAppearanceMode),
-            bodyStyle: makeBodyStyle(codeFont: codeFont, codeFontSize: codeFontSize),
+            bodyStyle: makeBodyStyle(codeFontName: codeFontName, codeFontSize: codeFontSize),
             notice: "",
             content: content
         )
@@ -272,7 +272,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         Bundle.main.resourceURL
     }
 
-    private func loadAppearanceSnapshot() -> (previewAppearanceMode: String, lightTheme: String, darkTheme: String, codeFont: String, codeFontSize: Int) {
+    private func loadAppearanceSnapshot() -> (previewAppearanceMode: String, lightTheme: String, darkTheme: String, codeFontName: String, codeFontSize: Int) {
         let defaults = Settings.userDefaults()
         let previewAppearanceMode = Settings.normalizedPreviewAppearanceMode(
             defaults.string(forKey: Settings.previewAppearanceModeKey)
@@ -283,18 +283,18 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         let darkTheme = Settings.normalizedDarkTheme(
             defaults.string(forKey: Settings.darkThemeKey)
         )
-        let codeFont = Settings.normalizedCodeFont(
+        let codeFontName = Settings.normalizedCodeFont(
             defaults.string(forKey: Settings.codeFontKey)
         )
         let codeFontSize = Settings.normalizedCodeFontSize(
             defaults.object(forKey: Settings.codeFontSizeKey)
         )
 
-        return (previewAppearanceMode, lightTheme, darkTheme, codeFont, codeFontSize)
+        return (previewAppearanceMode, lightTheme, darkTheme, codeFontName, codeFontSize)
     }
 
-    private func makeBodyStyle(codeFont: String, codeFontSize: Int) -> String {
-        let codeFontStack = Settings.codeFontStack(for: codeFont)
+    private func makeBodyStyle(codeFontName: String, codeFontSize: Int) -> String {
+        let codeFontStack = Settings.codeFontStack(for: codeFontName)
         return "--preview-code-font: \(codeFontStack); --preview-code-font-size: \(codeFontSize)px;"
     }
 

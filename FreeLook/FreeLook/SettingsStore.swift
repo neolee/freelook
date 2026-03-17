@@ -47,13 +47,13 @@ final class SettingsStore: ObservableObject {
         }
     }
 
-    @Published var codeFont: String {
+    @Published var selectedCodeFont: String {
         didSet {
             persistCodeFont()
         }
     }
 
-    @Published var codeFontSize: Int {
+    @Published var selectedCodeFontSize: Int {
         didSet {
             persistCodeFontSize()
         }
@@ -72,10 +72,10 @@ final class SettingsStore: ObservableObject {
         self.darkTheme = Settings.normalizedDarkTheme(
             userDefaults.string(forKey: Self.darkThemeKey)
         )
-        self.codeFont = Settings.normalizedCodeFont(
+        self.selectedCodeFont = Settings.normalizedCodeFont(
             userDefaults.string(forKey: Self.codeFontKey)
         )
-        self.codeFontSize = Settings.normalizedCodeFontSize(
+        self.selectedCodeFontSize = Settings.normalizedCodeFontSize(
             userDefaults.object(forKey: Self.codeFontSizeKey)
         )
 
@@ -86,16 +86,16 @@ final class SettingsStore: ObservableObject {
         previewAppearanceMode = Self.defaultPreviewAppearanceMode
         lightTheme = Self.defaultLightTheme
         darkTheme = Self.defaultDarkTheme
-        codeFont = Self.defaultCodeFont
-        codeFontSize = Self.defaultCodeFontSize
+        selectedCodeFont = Self.defaultCodeFont
+        selectedCodeFontSize = Self.defaultCodeFontSize
     }
 
     private func persistCurrentValues() {
         userDefaults.set(previewAppearanceMode, forKey: Self.previewAppearanceModeKey)
         userDefaults.set(lightTheme, forKey: Self.lightThemeKey)
         userDefaults.set(darkTheme, forKey: Self.darkThemeKey)
-        userDefaults.set(codeFont, forKey: Self.codeFontKey)
-        userDefaults.set(codeFontSize, forKey: Self.codeFontSizeKey)
+        userDefaults.set(selectedCodeFont, forKey: Self.codeFontKey)
+        userDefaults.set(selectedCodeFontSize, forKey: Self.codeFontSizeKey)
     }
 
     private func persistPreviewAppearanceMode() {
@@ -132,10 +132,10 @@ final class SettingsStore: ObservableObject {
     }
 
     private func persistCodeFont() {
-        let normalized = Settings.normalizedCodeFont(codeFont)
+        let normalized = Settings.normalizedCodeFont(selectedCodeFont)
 
-        if normalized != codeFont {
-            codeFont = normalized
+        if normalized != selectedCodeFont {
+            selectedCodeFont = normalized
             return
         }
 
@@ -143,10 +143,10 @@ final class SettingsStore: ObservableObject {
     }
 
     private func persistCodeFontSize() {
-        let normalized = Settings.normalizedCodeFontSize(codeFontSize)
+        let normalized = Settings.normalizedCodeFontSize(selectedCodeFontSize)
 
-        if normalized != codeFontSize {
-            codeFontSize = normalized
+        if normalized != selectedCodeFontSize {
+            selectedCodeFontSize = normalized
             return
         }
 

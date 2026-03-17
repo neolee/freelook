@@ -47,24 +47,24 @@ struct ContentView: View {
                 settingsSection("Typography") {
                     VStack(alignment: .leading, spacing: 16) {
                         pickerRow(
-                            title: "Font",
-                            selection: $settingsStore.codeFont,
+                            title: "Code Font",
+                            selection: $settingsStore.selectedCodeFont,
                             options: SettingsStore.codeFontOptions
                         )
 
                         HStack(alignment: .center, spacing: 18) {
-                            Text("Font Size")
+                            Text("Code Font Size")
                                 .foregroundStyle(.secondary)
                                 .frame(width: rowLabelWidth, alignment: .leading)
 
                             HStack(spacing: 12) {
-                                Text("\(settingsStore.codeFontSize) pt")
+                                Text("\(settingsStore.selectedCodeFontSize) pt")
                                     .font(.system(.body, design: .monospaced))
                                     .frame(width: 62, alignment: .leading)
 
                                 Stepper(
-                                    "Font Size",
-                                    value: $settingsStore.codeFontSize,
+                                    "Code Font Size",
+                                    value: $settingsStore.selectedCodeFontSize,
                                     in: SettingsStore.minimumCodeFontSize...SettingsStore.maximumCodeFontSize
                                 )
                                 .labelsHidden()
