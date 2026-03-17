@@ -1,5 +1,5 @@
 //
-//  PreviewFileLoader.swift
+//  FileLoader.swift
 //  QuickLookExtension
 //
 //  Created by Codex on 2026/3/17.
@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct PreviewFileLoadResult {
+struct FileLoadResult {
     let content: String
     let didTruncate: Bool
     let encodingName: String
 }
 
-enum PreviewFileLoaderError: LocalizedError {
+enum FileLoaderError: LocalizedError {
     case couldNotReadFile
     case unsupportedEncoding
 
@@ -27,16 +27,16 @@ enum PreviewFileLoaderError: LocalizedError {
     }
 }
 
-enum PreviewFileLoader {
+enum FileLoader {
     static let maximumPreviewBytes = 500 * 1024
 
-    static func loadPreview(for url: URL) throws -> PreviewFileLoadResult {
+    static func loadPreview(for url: URL) throws -> FileLoadResult {
         let handle: FileHandle
 
         do {
             handle = try FileHandle(forReadingFrom: url)
         } catch {
-            throw PreviewFileLoaderError.couldNotReadFile
+            throw FileLoaderError.couldNotReadFile
         }
 
         defer {
@@ -44,25 +44,25 @@ enum PreviewFileLoader {
         }
 
         guard let rawData = try handle.read(upToCount: maximumPreviewBytes + 1) else {
-            throw PreviewFileLoaderError.couldNotReadFile
+            throw FileLoaderError.couldNotReadFile
         }
 
         let didTruncate = rawData.count > maximumPreviewBytes
         let previewData = Data(didTruncate ? rawData.prefix(maximumPreviewBytes) : rawData)
 
         if let content = String(data: previewData, encoding: .utf8) {
-            return PreviewFileLoadResult(content: content, didTruncate: didTruncate, encodingName: "UTF-8")
+            return FileLoadResult(content: content, didTruncate: didTruncate, encodingName: "UTF-8")
         }
 
         if didTruncate, let content = utf8ContentDroppingIncompleteTail(from: previewData) {
-            return PreviewFileLoadResult(content: content, didTruncate: didTruncate, encodingName: "UTF-8")
+            return FileLoadResult(content: content, didTruncate: didTruncate, encodingName: "UTF-8")
         }
 
         if let content = String(data: previewData, encoding: .isoLatin1) {
-            return PreviewFileLoadResult(content: content, didTruncate: didTruncate, encodingName: "ISO Latin 1")
+            return FileLoadResult(content: content, didTruncate: didTruncate, encodingName: "ISO Latin 1")
         }
 
-        throw PreviewFileLoaderError.unsupportedEncoding
+        throw FileLoaderError.unsupportedEncoding
     }
 
     private static func utf8ContentDroppingIncompleteTail(from data: Data) -> String? {

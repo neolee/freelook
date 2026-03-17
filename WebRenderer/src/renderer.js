@@ -18,9 +18,9 @@ import githubLightTheme from "shiki/dist/themes/github-light.mjs";
 import nordTheme from "shiki/dist/themes/nord.mjs";
 import oneDarkProTheme from "shiki/dist/themes/one-dark-pro.mjs";
 import oneLightTheme from "shiki/dist/themes/one-light.mjs";
-import solarizedLightTheme from "shiki/dist/themes/solarized-light.mjs";
 import { createOnigurumaEngine } from "shiki/engine/oniguruma";
 import onigWasm from "shiki/wasm";
+import themeManifest from "../../FreeLook/QuickLookExtension/Resources/Themes.json";
 
 const HTML_ESCAPE_MAP = {
   "&": "&amp;",
@@ -33,20 +33,21 @@ const HTML_ESCAPE_MAP = {
 const DEFAULT_LIGHT_THEME = "github-light";
 const DEFAULT_DARK_THEME = "github-dark";
 
-const THEME_NAME_MAP = {
-  "Ayu Light": "ayu-light",
-  "Ayu Dark": "ayu-dark",
-  "GitHub Light": "github-light",
-  "GitHub Dark": "github-dark",
-  "One Light": "one-light",
-  "One Dark Pro": "one-dark-pro",
-  "Catppuccin Latte": "catppuccin-latte",
-  "Catppuccin Mocha": "catppuccin-mocha",
-  "Everforest Light": "everforest-light",
-  "Everforest Dark": "everforest-dark",
-  "Solarized Light": "solarized-light",
-  "Nord": "nord",
+const THEME_MODULE_MAP = {
+  "ayu-light": ayuLightTheme,
+  "ayu-dark": ayuDarkTheme,
+  "github-light": githubLightTheme,
+  "github-dark": githubDarkTheme,
+  "one-light": oneLightTheme,
+  "one-dark-pro": oneDarkProTheme,
+  "catppuccin-latte": catppuccinLatteTheme,
+  "catppuccin-mocha": catppuccinMochaTheme,
+  "everforest-light": everforestLightTheme,
+  "everforest-dark": everforestDarkTheme,
+  nord: nordTheme,
 };
+
+const THEME_NAME_MAP = Object.fromEntries(themeManifest.themes.map((theme) => [theme.displayName, theme.id]));
 
 const SUPPORTED_SOURCE_LANGUAGES = ["bash", "css", "html", "javascript", "python", "ruby", "swift", "typescript"];
 
@@ -61,20 +62,15 @@ const SOURCE_LANGUAGE_REGISTRATIONS = [
   typescriptLanguage,
 ];
 
-const THEME_REGISTRATIONS = [
-  ayuLightTheme,
-  ayuDarkTheme,
-  githubLightTheme,
-  githubDarkTheme,
-  oneLightTheme,
-  oneDarkProTheme,
-  everforestLightTheme,
-  everforestDarkTheme,
-  solarizedLightTheme,
-  catppuccinLatteTheme,
-  catppuccinMochaTheme,
-  nordTheme,
-];
+const THEME_REGISTRATIONS = themeManifest.themes.map((theme) => {
+  const registration = THEME_MODULE_MAP[theme.id];
+
+  if (!registration) {
+    throw new Error(`Missing Shiki theme registration for ${theme.id}.`);
+  }
+
+  return registration;
+});
 
 let highlighterPromise;
 
@@ -118,6 +114,43 @@ function renderPlainText(content, lang = "text") {
   ].join("");
 }
 
+function resolveThemeSurface(themeId) {
+  const theme = THEME_MODULE_MAP[themeId];
+  const colors = theme?.colors ?? {};
+
+  return {
+    background: colors["editor.background"] ?? null,
+    foreground: colors["editor.foreground"] ?? null,
+  };
+}
+
+function makeSurface(lightTheme, darkTheme) {
+  const normalizedLightTheme = normalizeThemeName(lightTheme, DEFAULT_LIGHT_THEME);
+  const normalizedDarkTheme = normalizeThemeName(darkTheme, DEFAULT_DARK_THEME);
+  const lightSurface = resolveThemeSurface(normalizedLightTheme);
+  const darkSurface = resolveThemeSurface(normalizedDarkTheme);
+
+  return {
+    lightBackground: lightSurface.background,
+    lightForeground: lightSurface.foreground,
+    darkBackground: darkSurface.background,
+    darkForeground: darkSurface.foreground,
+  };
+}
+
+function makeRenderResult({
+  html,
+  lightTheme,
+  darkTheme,
+  notice = null,
+}) {
+  return {
+    html,
+    notice,
+    surface: makeSurface(lightTheme, darkTheme),
+  };
+}
+
 export async function renderPreview({
   content = "",
   lang = "text",
@@ -127,21 +160,35 @@ export async function renderPreview({
   const normalizedLanguage = normalizeLanguageName(lang);
 
   if (!normalizedLanguage) {
-    return renderPlainText(content, lang);
+    return makeRenderResult({
+      html: renderPlainText(content, lang),
+      lightTheme,
+      darkTheme,
+    });
   }
 
   const highlighter = await getHighlighter();
 
   try {
-    return highlighter.codeToHtml(content, {
+    const html = highlighter.codeToHtml(content, {
       lang: normalizedLanguage,
       themes: {
         light: normalizeThemeName(lightTheme, DEFAULT_LIGHT_THEME),
         dark: normalizeThemeName(darkTheme, DEFAULT_DARK_THEME),
       },
     });
+
+    return makeRenderResult({
+      html,
+      lightTheme,
+      darkTheme,
+    });
   } catch {
-    return renderPlainText(content, lang);
+    return makeRenderResult({
+      html: renderPlainText(content, lang),
+      lightTheme,
+      darkTheme,
+    });
   }
 }
 

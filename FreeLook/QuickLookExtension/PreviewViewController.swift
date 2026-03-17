@@ -52,7 +52,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         let languageIdentifier = UTIMapper.languageIdentifier(for: contentType)
 
         do {
-            let preview = try PreviewFileLoader.loadPreview(for: url)
+            let preview = try FileLoader.loadPreview(for: url)
             let appearanceSnapshot = loadAppearanceSnapshot()
 
             await MainActor.run {
@@ -97,7 +97,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     private func loadPreviewHTML(
         fileName: String,
         languageIdentifier: String,
-        preview: PreviewFileLoadResult,
+        preview: FileLoadResult,
         previewAppearanceMode: String,
         lightTheme: String,
         darkTheme: String,
@@ -117,12 +117,14 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
 
         let content = """
         <div id="preview-root" class="preview-render-root" aria-live="polite"></div>
+        <div id="preview-renderer-notice" class="preview-notice" hidden></div>
         <div id="preview-runtime-notice" class="preview-notice" hidden></div>
         <script id="preview-payload" type="application/json">\(renderPayload)</script>
         <script>
         (async () => {
           const root = document.getElementById("preview-root");
           const payloadElement = document.getElementById("preview-payload");
+          const rendererNotice = document.getElementById("preview-renderer-notice");
           const runtimeNotice = document.getElementById("preview-runtime-notice");
 
           if (!root || !payloadElement) {
@@ -131,31 +133,30 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
 
           try {
             const payload = JSON.parse(payloadElement.textContent || "{}");
-            const html = await window.FreeLook.render(payload);
-            root.innerHTML = html;
+            const result = await window.FreeLook.render(payload);
+            root.innerHTML = result?.html ?? "";
 
-            const highlightedBlock = root.querySelector(".shiki");
-            if (highlightedBlock) {
-              const lightBackground = highlightedBlock.style.backgroundColor?.trim();
-              const lightForeground = highlightedBlock.style.color?.trim();
-              const darkBackground = highlightedBlock.style.getPropertyValue("--shiki-dark-bg")?.trim();
-              const darkForeground = highlightedBlock.style.getPropertyValue("--shiki-dark")?.trim();
+            if (rendererNotice) {
+              const notice = result?.notice?.trim();
+              rendererNotice.hidden = !notice;
+              rendererNotice.textContent = notice ?? "";
+            }
 
-              if (lightBackground) {
-                document.body.style.setProperty("--preview-light-surface-bg", lightBackground);
-              }
+            const surface = result?.surface;
+            if (surface?.lightBackground) {
+              document.body.style.setProperty("--preview-light-surface-bg", surface.lightBackground);
+            }
 
-              if (lightForeground) {
-                document.body.style.setProperty("--preview-light-surface-fg", lightForeground);
-              }
+            if (surface?.lightForeground) {
+              document.body.style.setProperty("--preview-light-surface-fg", surface.lightForeground);
+            }
 
-              if (darkBackground) {
-                document.body.style.setProperty("--preview-dark-surface-bg", darkBackground);
-              }
+            if (surface?.darkBackground) {
+              document.body.style.setProperty("--preview-dark-surface-bg", surface.darkBackground);
+            }
 
-              if (darkForeground) {
-                document.body.style.setProperty("--preview-dark-surface-fg", darkForeground);
-              }
+            if (surface?.darkForeground) {
+              document.body.style.setProperty("--preview-dark-surface-fg", surface.darkForeground);
             }
           } catch (error) {
             if (runtimeNotice) {
@@ -253,33 +254,33 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     private func loadAppearanceSnapshot() -> (previewAppearanceMode: String, lightTheme: String, darkTheme: String, codeFont: String, codeFontSize: Int) {
-        let defaults = SharedPreviewSettings.userDefaults()
-        let previewAppearanceMode = SharedPreviewSettings.normalizedPreviewAppearanceMode(
-            defaults.string(forKey: SharedPreviewSettings.previewAppearanceModeKey)
+        let defaults = Settings.userDefaults()
+        let previewAppearanceMode = Settings.normalizedPreviewAppearanceMode(
+            defaults.string(forKey: Settings.previewAppearanceModeKey)
         )
-        let lightTheme = SharedPreviewSettings.normalizedLightTheme(
-            defaults.string(forKey: SharedPreviewSettings.lightThemeKey)
+        let lightTheme = Settings.normalizedLightTheme(
+            defaults.string(forKey: Settings.lightThemeKey)
         )
-        let darkTheme = SharedPreviewSettings.normalizedDarkTheme(
-            defaults.string(forKey: SharedPreviewSettings.darkThemeKey)
+        let darkTheme = Settings.normalizedDarkTheme(
+            defaults.string(forKey: Settings.darkThemeKey)
         )
-        let codeFont = SharedPreviewSettings.normalizedCodeFont(
-            defaults.string(forKey: SharedPreviewSettings.codeFontKey)
+        let codeFont = Settings.normalizedCodeFont(
+            defaults.string(forKey: Settings.codeFontKey)
         )
-        let codeFontSize = SharedPreviewSettings.normalizedCodeFontSize(
-            defaults.object(forKey: SharedPreviewSettings.codeFontSizeKey)
+        let codeFontSize = Settings.normalizedCodeFontSize(
+            defaults.object(forKey: Settings.codeFontSizeKey)
         )
 
         return (previewAppearanceMode, lightTheme, darkTheme, codeFont, codeFontSize)
     }
 
     private func makeBodyStyle(codeFont: String, codeFontSize: Int) -> String {
-        let codeFontStack = SharedPreviewSettings.codeFontStack(for: codeFont)
+        let codeFontStack = Settings.codeFontStack(for: codeFont)
         return "--preview-code-font: \(codeFontStack); --preview-code-font-size: \(codeFontSize)px;"
     }
 
     private func previewAppearanceToken(for mode: String) -> String {
-        switch SharedPreviewSettings.normalizedPreviewAppearanceMode(mode) {
+        switch Settings.normalizedPreviewAppearanceMode(mode) {
         case "Always Light":
             return "light"
         case "Always Dark":

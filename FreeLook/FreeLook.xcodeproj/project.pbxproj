@@ -13,8 +13,8 @@
 		B5A7CCCF2F68111100988F0A /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5A7CCCD2F68111100988F0A /* AppIntents.framework */; };
 		B5A7CCD02F68111100988F0A /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5A7CCCD2F68111100988F0A /* AppIntents.framework */; };
 		B5A7CCD12F68111200988F0A /* QuickLookExtension/UTIMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A7CCD22F68111200988F0A /* QuickLookExtension/UTIMapper.swift */; };
-		C9A100102F689500006D34B2 /* QuickLookExtension/PreviewFileLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A100112F689500006D34B2 /* QuickLookExtension/PreviewFileLoader.swift */; };
-		C9A100202F689500006D34B2 /* QuickLookExtension/SharedPreviewSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A100212F689500006D34B2 /* QuickLookExtension/SharedPreviewSettings.swift */; };
+		C9A100102F689500006D34B2 /* QuickLookExtension/FileLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A100112F689500006D34B2 /* QuickLookExtension/FileLoader.swift */; };
+		C9A100202F689500006D34B2 /* QuickLookExtension/Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A100212F689500006D34B2 /* QuickLookExtension/Settings.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,8 +55,8 @@
 		B5A7CCC22F680BF500988F0A /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5A7CCCD2F68111100988F0A /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
 		B5A7CCD22F68111200988F0A /* QuickLookExtension/UTIMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookExtension/UTIMapper.swift; sourceTree = SOURCE_ROOT; };
-		C9A100112F689500006D34B2 /* QuickLookExtension/PreviewFileLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookExtension/PreviewFileLoader.swift; sourceTree = SOURCE_ROOT; };
-		C9A100212F689500006D34B2 /* QuickLookExtension/SharedPreviewSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookExtension/SharedPreviewSettings.swift; sourceTree = SOURCE_ROOT; };
+		C9A100112F689500006D34B2 /* QuickLookExtension/FileLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookExtension/FileLoader.swift; sourceTree = SOURCE_ROOT; };
+		C9A100212F689500006D34B2 /* QuickLookExtension/Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookExtension/Settings.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -153,8 +153,8 @@
 		B5A7CD0A2F6820B400988F0A /* Cross-Target Sources */ = {
 			isa = PBXGroup;
 			children = (
-				C9A100212F689500006D34B2 /* QuickLookExtension/SharedPreviewSettings.swift */,
-				C9A100112F689500006D34B2 /* QuickLookExtension/PreviewFileLoader.swift */,
+				C9A100212F689500006D34B2 /* QuickLookExtension/Settings.swift */,
+				C9A100112F689500006D34B2 /* QuickLookExtension/FileLoader.swift */,
 				B5A7CCD22F68111200988F0A /* QuickLookExtension/UTIMapper.swift */,
 			);
 			name = "Cross-Target Sources";
@@ -307,7 +307,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C9A100202F689500006D34B2 /* QuickLookExtension/SharedPreviewSettings.swift in Sources */,
+				C9A100202F689500006D34B2 /* QuickLookExtension/Settings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -322,7 +322,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C9A100102F689500006D34B2 /* QuickLookExtension/PreviewFileLoader.swift in Sources */,
+				C9A100102F689500006D34B2 /* QuickLookExtension/FileLoader.swift in Sources */,
 				B5A7CCD12F68111200988F0A /* QuickLookExtension/UTIMapper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

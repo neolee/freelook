@@ -10,6 +10,15 @@ import Testing
 @testable import FreeLook
 
 struct SettingsStoreTests {
+    @Test func exposesThemeOptionsFromManifest() {
+        #expect(SettingsStore.lightThemeOptions.contains("Ayu Light"))
+        #expect(SettingsStore.lightThemeOptions.contains("Everforest Light"))
+        #expect(SettingsStore.darkThemeOptions.contains("Ayu Dark"))
+        #expect(SettingsStore.darkThemeOptions.contains("Everforest Dark"))
+        #expect(SettingsStore.defaultLightTheme == "GitHub Light")
+        #expect(SettingsStore.defaultDarkTheme == "GitHub Dark")
+    }
+
     @Test func persistsThemeSelectionsAcrossInstances() {
         let defaults = temporaryDefaults()
         let previewAppearanceMode = SettingsStore.previewAppearanceModeOptions[2]

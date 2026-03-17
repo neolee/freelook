@@ -1,0 +1,63 @@
+{
+  "defaults": {
+    "light": "GitHub Light",
+    "dark": "GitHub Dark"
+  },
+  "themes": [
+    {
+      "id": "ayu-light",
+      "displayName": "Ayu Light",
+      "appearance": "light"
+    },
+    {
+      "id": "github-light",
+      "displayName": "GitHub Light",
+      "appearance": "light"
+    },
+    {
+      "id": "one-light",
+      "displayName": "One Light",
+      "appearance": "light"
+    },
+    {
+      "id": "catppuccin-latte",
+      "displayName": "Catppuccin Latte",
+      "appearance": "light"
+    },
+    {
+      "id": "everforest-light",
+      "displayName": "Everforest Light",
+      "appearance": "light"
+    },
+    {
+      "id": "ayu-dark",
+      "displayName": "Ayu Dark",
+      "appearance": "dark"
+    },
+    {
+      "id": "github-dark",
+      "displayName": "GitHub Dark",
+      "appearance": "dark"
+    },
+    {
+      "id": "one-dark-pro",
+      "displayName": "One Dark Pro",
+      "appearance": "dark"
+    },
+    {
+      "id": "catppuccin-mocha",
+      "displayName": "Catppuccin Mocha",
+      "appearance": "dark"
+    },
+    {
+      "id": "everforest-dark",
+      "displayName": "Everforest Dark",
+      "appearance": "dark"
+    },
+    {
+      "id": "nord",
+      "displayName": "Nord",
+      "appearance": "dark"
+    }
+  ]
+}

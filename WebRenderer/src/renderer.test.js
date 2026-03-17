@@ -25,39 +25,45 @@ describe("renderer bootstrap", () => {
     expect(normalizeThemeName("Everforest Light", "github-light")).toBe("everforest-light");
     expect(normalizeThemeName("Everforest Dark", "github-dark")).toBe("everforest-dark");
     expect(normalizeThemeName("GitHub Light", "github-light")).toBe("github-light");
-    expect(normalizeThemeName("Solarized Light", "github-light")).toBe("solarized-light");
     expect(normalizeThemeName("Missing Theme", "github-dark")).toBe("github-dark");
   });
 
   test("renders source code with shiki", async () => {
-    const html = await renderPreview({
+    const result = await renderPreview({
       content: "const value = 1 < 2;\n",
       lang: "javascript",
       lightTheme: "GitHub Light",
       darkTheme: "GitHub Dark",
     });
+    const { html, surface } = result;
 
     expect(html).toContain("class=\"shiki");
     expect(html).toContain("shiki-themes");
     expect(html).toContain("--shiki-dark");
     expect(html).toContain("const");
+    expect(typeof surface.lightBackground).toBe("string");
+    expect(typeof surface.darkBackground).toBe("string");
   });
 
   test("falls back to escaped plain text for unsupported languages", async () => {
-    const html = await renderPreview({
+    const result = await renderPreview({
       content: "plain <text>",
       lang: "text",
     });
+    const { html, notice, surface } = result;
 
     expect(html).toContain("freelook-plain");
     expect(html).toContain("plain &lt;text&gt;");
+    expect(notice).toBeNull();
+    expect(typeof surface.lightForeground).toBe("string");
   });
 
   test("renders Swift source code with Oniguruma wasm", async () => {
-    const html = await renderPreview({
+    const result = await renderPreview({
       content: "let value = 1\n",
       lang: "swift",
     });
+    const { html } = result;
 
     expect(html).toContain("class=\"shiki");
     expect(html).toContain("--shiki-dark");
@@ -70,11 +76,13 @@ describe("renderer bootstrap", () => {
 
     expect(target.FreeLook).toBe(api);
 
-    const html = await target.FreeLook.render({
+    const result = await target.FreeLook.render({
       content: "print('hello')\n",
       lang: "python",
     });
+    const { html, surface } = result;
 
     expect(html).toContain("class=\"shiki");
+    expect(typeof surface.darkForeground).toBe("string");
   });
 });

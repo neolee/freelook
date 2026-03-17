@@ -10,24 +10,24 @@ import Foundation
 
 final class SettingsStore: ObservableObject {
     static let shared = SettingsStore()
-    static let appGroupSuiteName = SharedPreviewSettings.appGroupSuiteName
-    static let previewAppearanceModeKey = SharedPreviewSettings.previewAppearanceModeKey
-    static let lightThemeKey = SharedPreviewSettings.lightThemeKey
-    static let darkThemeKey = SharedPreviewSettings.darkThemeKey
-    static let codeFontKey = SharedPreviewSettings.codeFontKey
-    static let codeFontSizeKey = SharedPreviewSettings.codeFontSizeKey
+    static let appGroupSuiteName = Settings.appGroupSuiteName
+    static let previewAppearanceModeKey = Settings.previewAppearanceModeKey
+    static let lightThemeKey = Settings.lightThemeKey
+    static let darkThemeKey = Settings.darkThemeKey
+    static let codeFontKey = Settings.codeFontKey
+    static let codeFontSizeKey = Settings.codeFontSizeKey
 
-    static let previewAppearanceModeOptions = SharedPreviewSettings.previewAppearanceModeOptions
-    static let lightThemeOptions = SharedPreviewSettings.lightThemeOptions
-    static let darkThemeOptions = SharedPreviewSettings.darkThemeOptions
-    static let defaultPreviewAppearanceMode = SharedPreviewSettings.defaultPreviewAppearanceMode
-    static let codeFontOptions = SharedPreviewSettings.codeFontOptions
-    static let defaultLightTheme = SharedPreviewSettings.defaultLightTheme
-    static let defaultDarkTheme = SharedPreviewSettings.defaultDarkTheme
-    static let defaultCodeFont = SharedPreviewSettings.defaultCodeFont
-    static let minimumCodeFontSize = SharedPreviewSettings.minimumCodeFontSize
-    static let maximumCodeFontSize = SharedPreviewSettings.maximumCodeFontSize
-    static let defaultCodeFontSize = SharedPreviewSettings.defaultCodeFontSize
+    static let previewAppearanceModeOptions = Settings.previewAppearanceModeOptions
+    static let lightThemeOptions = Settings.lightThemeOptions
+    static let darkThemeOptions = Settings.darkThemeOptions
+    static let defaultPreviewAppearanceMode = Settings.defaultPreviewAppearanceMode
+    static let codeFontOptions = Settings.codeFontOptions
+    static let defaultLightTheme = Settings.defaultLightTheme
+    static let defaultDarkTheme = Settings.defaultDarkTheme
+    static let defaultCodeFont = Settings.defaultCodeFont
+    static let minimumCodeFontSize = Settings.minimumCodeFontSize
+    static let maximumCodeFontSize = Settings.maximumCodeFontSize
+    static let defaultCodeFontSize = Settings.defaultCodeFontSize
 
     @Published var lightTheme: String {
         didSet {
@@ -63,19 +63,19 @@ final class SettingsStore: ObservableObject {
 
     init(userDefaults: UserDefaults = SettingsStore.defaultUserDefaults()) {
         self.userDefaults = userDefaults
-        self.previewAppearanceMode = SharedPreviewSettings.normalizedPreviewAppearanceMode(
+        self.previewAppearanceMode = Settings.normalizedPreviewAppearanceMode(
             userDefaults.string(forKey: Self.previewAppearanceModeKey)
         )
-        self.lightTheme = SharedPreviewSettings.normalizedLightTheme(
+        self.lightTheme = Settings.normalizedLightTheme(
             userDefaults.string(forKey: Self.lightThemeKey)
         )
-        self.darkTheme = SharedPreviewSettings.normalizedDarkTheme(
+        self.darkTheme = Settings.normalizedDarkTheme(
             userDefaults.string(forKey: Self.darkThemeKey)
         )
-        self.codeFont = SharedPreviewSettings.normalizedCodeFont(
+        self.codeFont = Settings.normalizedCodeFont(
             userDefaults.string(forKey: Self.codeFontKey)
         )
-        self.codeFontSize = SharedPreviewSettings.normalizedCodeFontSize(
+        self.codeFontSize = Settings.normalizedCodeFontSize(
             userDefaults.object(forKey: Self.codeFontSizeKey)
         )
 
@@ -99,7 +99,7 @@ final class SettingsStore: ObservableObject {
     }
 
     private func persistPreviewAppearanceMode() {
-        let normalized = SharedPreviewSettings.normalizedPreviewAppearanceMode(previewAppearanceMode)
+        let normalized = Settings.normalizedPreviewAppearanceMode(previewAppearanceMode)
 
         if normalized != previewAppearanceMode {
             previewAppearanceMode = normalized
@@ -110,7 +110,7 @@ final class SettingsStore: ObservableObject {
     }
 
     private func persistLightTheme() {
-        let normalized = SharedPreviewSettings.normalizedLightTheme(lightTheme)
+        let normalized = Settings.normalizedLightTheme(lightTheme)
 
         if normalized != lightTheme {
             lightTheme = normalized
@@ -121,7 +121,7 @@ final class SettingsStore: ObservableObject {
     }
 
     private func persistDarkTheme() {
-        let normalized = SharedPreviewSettings.normalizedDarkTheme(darkTheme)
+        let normalized = Settings.normalizedDarkTheme(darkTheme)
 
         if normalized != darkTheme {
             darkTheme = normalized
@@ -132,7 +132,7 @@ final class SettingsStore: ObservableObject {
     }
 
     private func persistCodeFont() {
-        let normalized = SharedPreviewSettings.normalizedCodeFont(codeFont)
+        let normalized = Settings.normalizedCodeFont(codeFont)
 
         if normalized != codeFont {
             codeFont = normalized
@@ -143,7 +143,7 @@ final class SettingsStore: ObservableObject {
     }
 
     private func persistCodeFontSize() {
-        let normalized = SharedPreviewSettings.normalizedCodeFontSize(codeFontSize)
+        let normalized = Settings.normalizedCodeFontSize(codeFontSize)
 
         if normalized != codeFontSize {
             codeFontSize = normalized
@@ -154,6 +154,6 @@ final class SettingsStore: ObservableObject {
     }
 
     private static func defaultUserDefaults() -> UserDefaults {
-        SharedPreviewSettings.userDefaults()
+        Settings.userDefaults()
     }
 }

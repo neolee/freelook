@@ -280,8 +280,8 @@ Required setup:
 │   │   └── FreeLook.entitlements
 │   ├── QuickLookExtension/
 │   │   ├── PreviewViewController.swift  WKWebView preview shell
-│   │   ├── PreviewFileLoader.swift      bounded file loading + decoding
-│   │   ├── SharedPreviewSettings.swift  shared App Group keys/defaults
+│   │   ├── FileLoader.swift             bounded file loading + decoding
+│   │   ├── Settings.swift               shared App Group keys/defaults
 │   │   ├── UTIMapper.swift              UTType -> renderer language mapping
 │   │   ├── Info.plist
 │   │   ├── QuickLookExtension.entitlements
@@ -291,7 +291,7 @@ Required setup:
 │   │       └── styles.css               shared preview styles
 │   ├── Tests/
 │   │   ├── UTIMapperTests.swift
-│   │   ├── PreviewFileLoaderTests.swift
+│   │   ├── FileLoaderTests.swift
 │   │   └── SettingsStoreTests.swift
 │   └── FreeLook.xcodeproj
 ├── samples/                           committed review and test corpus

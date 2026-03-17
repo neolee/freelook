@@ -1,5 +1,5 @@
 //
-//  SharedPreviewSettings.swift
+//  Settings.swift
 //  QuickLookExtension
 //
 //  Created by Codex on 2026/3/17.
@@ -9,7 +9,25 @@ import AppKit
 import CoreText
 import Foundation
 
-enum SharedPreviewSettings {
+enum Settings {
+    private struct ThemeManifest: Decodable {
+        struct Defaults: Decodable {
+            let light: String
+            let dark: String
+        }
+
+        struct Theme: Decodable {
+            let id: String
+            let displayName: String
+            let appearance: String
+        }
+
+        let defaults: Defaults
+        let themes: [Theme]
+    }
+
+    private static let themeManifest = loadThemeManifest()
+
     static let appGroupSuiteName = "group.net.paradigmx.FreeLook"
     static let previewAppearanceModeKey = "previewAppearanceMode"
     static let lightThemeKey = "lightTheme"
@@ -22,24 +40,15 @@ enum SharedPreviewSettings {
         "Always Light",
         "Always Dark",
     ]
-    static let lightThemeOptions = [
-        "Ayu Light",
-        "GitHub Light",
-        "One Light",
-        "Catppuccin Latte",
-        "Everforest Light",
-    ]
-    static let darkThemeOptions = [
-        "Ayu Dark",
-        "GitHub Dark",
-        "One Dark Pro",
-        "Catppuccin Mocha",
-        "Everforest Dark",
-        "Nord",
-    ]
+    static let lightThemeOptions = themeManifest.themes
+        .filter { $0.appearance == "light" }
+        .map(\.displayName)
+    static let darkThemeOptions = themeManifest.themes
+        .filter { $0.appearance == "dark" }
+        .map(\.displayName)
     static let defaultPreviewAppearanceMode = "Follow System"
-    static let defaultLightTheme = "GitHub Light"
-    static let defaultDarkTheme = "GitHub Dark"
+    static let defaultLightTheme = themeManifest.defaults.light
+    static let defaultDarkTheme = themeManifest.defaults.dark
     static let systemDefaultCodeFont = "System Default"
     static let codeFontOptions = [systemDefaultCodeFont] + availableMonospacedFonts()
     static let defaultCodeFont = systemDefaultCodeFont
@@ -141,5 +150,43 @@ enum SharedPreviewSettings {
         value
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "\"", with: "\\\"")
+    }
+
+    private static func loadThemeManifest() -> ThemeManifest {
+        let decoder = JSONDecoder()
+
+        for url in candidateThemeManifestURLs() {
+            guard let data = try? Data(contentsOf: url),
+                  let manifest = try? decoder.decode(ThemeManifest.self, from: data) else {
+                continue
+            }
+
+            return manifest
+        }
+
+        assertionFailure("Themes.json could not be loaded from the app bundle or source checkout.")
+        return ThemeManifest(
+            defaults: .init(light: "GitHub Light", dark: "GitHub Dark"),
+            themes: [
+                .init(id: "github-light", displayName: "GitHub Light", appearance: "light"),
+                .init(id: "github-dark", displayName: "GitHub Dark", appearance: "dark"),
+            ]
+        )
+    }
+
+    private static func candidateThemeManifestURLs() -> [URL] {
+        var urls: [URL] = []
+
+        if let bundledURL = Bundle.main.url(forResource: "Themes", withExtension: "json") {
+            urls.append(bundledURL)
+        }
+
+        let sourceCheckoutURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("Resources", isDirectory: true)
+            .appendingPathComponent("Themes.json", isDirectory: false)
+        urls.append(sourceCheckoutURL)
+
+        return urls
     }
 }
