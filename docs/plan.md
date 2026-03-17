@@ -63,6 +63,17 @@ File-type routing inside the renderer:
 
 Markdown support should aim at the full practical GFM surface that is reasonable with the chosen libraries, including fenced code blocks, tables, task lists, autolinks, and strikethrough. If a specific GFM feature must be omitted because of library or safety constraints, that exception should be documented before implementation is considered complete.
 
+Markdown styling is intentionally split into two layers:
+
+- `github-markdown.css` provides the mature prose typography baseline for headings, paragraphs, lists, tables, blockquotes, and general Markdown rhythm.
+- FreeLook-specific CSS only bridges that baseline into the app's preview system: preview surface colors, light/dark mode policy, selected Shiki themes for fenced code blocks, link/accent integration, task-list checkbox treatment, and code font/code size application for fenced and inline code.
+
+The current `Typography` settings are code-focused settings, not general prose settings:
+
+- `Font` affects fenced code blocks and inline code.
+- `Font Size` affects code presentation, not Markdown body copy or heading scale.
+- Markdown body typography remains controlled by the vendored Markdown CSS baseline unless a later feature explicitly introduces separate prose typography settings.
+
 ### JS Toolchain Selection
 
 Phase 2 should keep the JS side intentionally small and infrastructure-light.

@@ -70,6 +70,40 @@ describe("renderer bootstrap", () => {
     expect(html).toContain("span class=\"line\"");
   });
 
+  test("renders Markdown with GFM-style prose and highlighted fences", async () => {
+    const result = await renderPreview({
+      content: [
+        "# Hello",
+        "",
+        "Visit <https://example.com> and ~~cross this out~~.",
+        "",
+        "- [x] Done",
+        "- [ ] Pending",
+        "",
+        "| A | B |",
+        "| --- | --- |",
+        "| 1 | 2 |",
+        "",
+        "```swift",
+        "let value = 1",
+        "```",
+      ].join("\n"),
+      lang: "markdown",
+      lightTheme: "GitHub Light",
+      darkTheme: "GitHub Dark",
+    });
+    const { html, notice, surface } = result;
+
+    expect(html).toContain("<h1>Hello</h1>");
+    expect(html).toContain("<a href=\"https://example.com\">https://example.com</a>");
+    expect(html).toContain("<s>cross this out</s>");
+    expect(html).toContain("task-list-item-checkbox");
+    expect(html).toContain("<table>");
+    expect(html).toContain("class=\"shiki");
+    expect(notice).toBeNull();
+    expect(typeof surface.lightBackground).toBe("string");
+  });
+
   test("installs the FreeLook global API", async () => {
     const target = {};
     const api = installRenderer(target);

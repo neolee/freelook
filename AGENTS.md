@@ -28,6 +28,7 @@ Reference for AI coding agents working on this codebase. Keep this file concise,
 - Syntax highlighting: Shiki v4.x with Oniguruma/WASM.
 - Renderer packaging baseline: use the inline wasm module path (`shiki/wasm`) so the extension only needs to load `bundle.js`; do not depend on a standalone `onig.wasm` resource unless a later validated experiment proves it is stable in the Quick Look `WKWebView` environment.
 - Markdown: markdown-it + @shikijs/markdown-it plugin.
+- Markdown prose styling baseline: vendored `github-markdown.css`, with FreeLook-specific CSS overrides limited to preview-surface/theme integration and code-font/code-size application.
 - JSON pretty-printing: native `JSON.stringify(JSON.parse(src), null, 2)` piped into Shiki with `lang: 'json'`.
 - XML pretty-printing: xml-formatter piped into Shiki with `lang: 'xml'`.
 - The renderer bundle runs in `WKWebView`, so production renderer code must stay browser-compatible and must not depend on Bun-specific runtime APIs.
@@ -64,6 +65,7 @@ Run from repo root:
 - The app UI is English-only; no formal localization (`Localizable.strings`) is needed.
 - Do not wrap strings in `NSLocalizedString` speculatively.
 - Theme names are display strings defined in `QuickLookExtension/Resources/Themes.json`; they are not localized.
+- The existing `Typography` settings are code-only settings. Do not silently extend them to control Markdown prose typography; add a separate prose setting only after explicit product discussion.
 
 ---
 

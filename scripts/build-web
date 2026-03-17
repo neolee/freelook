@@ -8,3 +8,4 @@ cd "$REPO_DIR/WebRenderer"
 bun run build
 
 cp dist/bundle.js "$RESOURCES_DIR/bundle.js"
+cp node_modules/github-markdown-css/github-markdown.css "$RESOURCES_DIR/github-markdown.css"

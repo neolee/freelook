@@ -10,6 +10,7 @@
   "dependencies": {
     "@shikijs/markdown-it": "4.0.2",
     "esbuild": "0.27.4",
+    "github-markdown-css": "^5.9.0",
     "markdown-it": "14.1.1",
     "shiki": "4.0.2",
     "xml-formatter": "3.7.0"

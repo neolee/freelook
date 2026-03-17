@@ -1,4 +1,6 @@
 import { createHighlighterCore } from "shiki/core";
+import MarkdownIt from "markdown-it";
+import { fromHighlighter } from "@shikijs/markdown-it";
 import bashLanguage from "shiki/dist/langs/bash.mjs";
 import cssLanguage from "shiki/dist/langs/css.mjs";
 import htmlLanguage from "shiki/dist/langs/html.mjs";
@@ -73,6 +75,7 @@ const THEME_REGISTRATIONS = themeManifest.themes.map((theme) => {
 });
 
 let highlighterPromise;
+let markdownParserPromise;
 
 export function escapeHTML(value) {
   return String(value).replace(/[&<>"']/g, (character) => HTML_ESCAPE_MAP[character]);
@@ -88,6 +91,10 @@ export function normalizeLanguageName(languageName) {
   }
 
   return SUPPORTED_SOURCE_LANGUAGES.includes(languageName) ? languageName : null;
+}
+
+function isMarkdownLanguage(languageName) {
+  return languageName === "markdown";
 }
 
 function getHighlighter() {
@@ -106,12 +113,100 @@ function getHighlighter() {
   return highlighterPromise;
 }
 
+function taskListPlugin(markdownIt) {
+  markdownIt.core.ruler.after("inline", "freelook-task-list", (state) => {
+    for (let index = 2; index < state.tokens.length; index += 1) {
+      const inlineToken = state.tokens[index];
+
+      if (inlineToken.type !== "inline" || !inlineToken.children?.length) {
+        continue;
+      }
+
+      const paragraphToken = state.tokens[index - 1];
+      const listItemToken = state.tokens[index - 2];
+
+      if (paragraphToken?.type !== "paragraph_open" || listItemToken?.type !== "list_item_open") {
+        continue;
+      }
+
+      const firstChild = inlineToken.children[0];
+
+      if (!firstChild || firstChild.type !== "text") {
+        continue;
+      }
+
+      const match = firstChild.content.match(/^\[([ xX])\]\s+/);
+
+      if (!match) {
+        continue;
+      }
+
+      const isChecked = match[1].toLowerCase() === "x";
+      firstChild.content = firstChild.content.slice(match[0].length);
+
+      if (firstChild.content.length === 0) {
+        inlineToken.children.shift();
+      }
+
+      listItemToken.attrJoin("class", "task-list-item");
+      const checkboxToken = new state.Token("html_inline", "", 0);
+      checkboxToken.content = `<input class="task-list-item-checkbox" type="checkbox"${isChecked ? " checked" : ""} disabled>`;
+      inlineToken.children.unshift(checkboxToken);
+    }
+  });
+}
+
+async function getMarkdownParser() {
+  if (!markdownParserPromise) {
+    markdownParserPromise = (async () => {
+      const highlighter = await getHighlighter();
+      const markdownIt = new MarkdownIt({
+        html: false,
+        linkify: true,
+      });
+
+      markdownIt.use(
+        fromHighlighter(highlighter, {
+          themes: {
+            light: DEFAULT_LIGHT_THEME,
+            dark: DEFAULT_DARK_THEME,
+          },
+        })
+      );
+      markdownIt.use(taskListPlugin);
+
+      const defaultFenceRenderer = markdownIt.renderer.rules.fence
+        ?? ((tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options));
+
+      markdownIt.renderer.rules.fence = (tokens, index, options, environment, self) => {
+        const token = tokens[index];
+        const language = token.info.trim().split(/\s+/)[0] ?? "";
+
+        if (!language || normalizeLanguageName(language)) {
+          return defaultFenceRenderer(tokens, index, options, environment, self);
+        }
+
+        return renderPlainText(token.content, language);
+      };
+
+      return markdownIt;
+    })();
+  }
+
+  return markdownParserPromise;
+}
+
 function renderPlainText(content, lang = "text") {
   return [
     `<pre class="freelook-plain" data-lang="${escapeHTML(lang)}">`,
     `<code>${escapeHTML(content)}</code>`,
     "</pre>",
   ].join("");
+}
+
+async function renderMarkdownDocument(content) {
+  const markdownParser = await getMarkdownParser();
+  return `<article class="markdown-body">${markdownParser.render(content)}</article>`;
 }
 
 function resolveThemeSurface(themeId) {
@@ -157,6 +252,14 @@ export async function renderPreview({
   lightTheme = "GitHub Light",
   darkTheme = "GitHub Dark",
 } = {}) {
+  if (isMarkdownLanguage(lang)) {
+    return makeRenderResult({
+      html: await renderMarkdownDocument(content),
+      lightTheme,
+      darkTheme,
+    });
+  }
+
   const normalizedLanguage = normalizeLanguageName(lang);
 
   if (!normalizedLanguage) {
