@@ -99,7 +99,22 @@ The HTML shell is a product surface, not a throwaway integration detail. Visual 
 
 - The preview should feel calm, compact, and durable for daily use.
 - The content should remain visually subordinate to the file itself; decorative chrome should be restrained.
+- The default Quick Look surface should be content-first: the file body is the product, and surrounding UI should stay as close to invisible as possible.
 - Light and dark mode should share one spacing and typography system even though syntax colors come from different Shiki themes.
+
+### Content-first rules
+
+- Do not repeat the file name inside the preview body. Quick Look window chrome already provides that context.
+- Do not keep persistent header, footer, theme labels, `UTType`, encoding, or similar diagnostic metadata in the product surface.
+- Non-content UI should appear only when it serves a real reading or error-handling need.
+- Warning and fallback states should stay visible enough to explain what happened, but they should never compete with the main content once the file is readable.
+- Decorative containers should be weak. The preview should feel like viewing the file itself, not like viewing a document inside an app page.
+
+### Optional utility affordances
+
+- A very small top bar that shows the full file path and offers one-click copy may be worth exploring later.
+- This is explicitly a secondary utility feature, not part of the default preview structure.
+- If implemented, it should be lightweight enough that the preview still reads as content-first.
 
 ### Baseline design tokens to settle early
 
@@ -324,6 +339,7 @@ The remaining work should optimize for early visual validation without sacrifici
 
 3.1 Core source-code rendering
 - Implement the base `Shiki` pipeline in `renderer.js` with `createJavaScriptRegexEngine()` and the bundled theme set.
+- At this stage, remove the temporary development chrome so the Quick Look body converges toward the approved content-first presentation.
 - Verify representative source files from the sample corpus first.
 - Verification gate: clean native build; full unit test suite; user confirms the baseline code-reading surface.
 
@@ -374,11 +390,13 @@ The remaining work should optimize for early visual validation without sacrifici
 5.2 Error and fallback states
 - Refine explicit UI states for unreadable encoding, oversized files, and renderer parse warnings.
 - Ensure these states match the approved visual system rather than looking like ad hoc debug output.
+- Keep them as transient content-adjacent notices rather than turning them into permanent structural chrome.
 - Verification gate: clean build; full unit test suite; user manually validates the fallback states.
 
 5.3 Reading comfort refinements
 - Revisit font size, line height, padding, code-block density, and any approved reading controls after the main format pipelines are already stable.
 - Optional line numbers, if explored, should be treated as a product decision rather than an automatic addition.
+- Any future full-path bar or copy-path affordance should be evaluated here as an optional utility layer, not as required default UI.
 - Verification gate: clean build; full unit test suite; user reviews readability before additional polish is added.
 
 5.4 Product polish assets
