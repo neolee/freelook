@@ -388,6 +388,8 @@ Status: completed.
 - Validate headings, paragraphs, fenced code blocks, tables, task lists, strikethrough, blockquotes, and links using the Markdown showcase sample.
 - Verification gate: clean native build; full unit test suite; user manually reviews Markdown rendering quality.
 
+Status: completed.
+
 3.3 JSON rendering
 - Implement `JSON.parse` → `JSON.stringify(_, null, 2)` → `Shiki` `json`.
 - On parse failure, display the original source instead of an empty or broken preview, and add a clear but restrained warning.
@@ -395,6 +397,7 @@ Status: completed.
 
 3.4 XML rendering
 - Implement `xml-formatter` → `Shiki` `xml`.
+- Treat macOS-native XML-derived developer files such as `.plist` and entitlement documents as part of this XML rendering surface, not as a separate renderer path.
 - On parse failure, display the original source instead of an empty or broken preview, and add a clear but restrained warning.
 - Verification gate: clean native build; full unit test suite; user manually reviews both valid and invalid XML behavior.
 

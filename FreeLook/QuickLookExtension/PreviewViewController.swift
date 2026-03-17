@@ -105,8 +105,9 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         codeFontSize: Int
     ) {
         let truncationNotice = preview.didTruncate
-            ? "<div class=\"preview-notice\">Preview truncated to the first 500 KB.</div>"
+            ? "<div class=\"preview-notice\">Large file. Showing the first 500 KB.</div>"
             : ""
+        let hasInitialNotice = preview.didTruncate ? "" : " hidden"
 
         let renderPayload = makeRenderPayloadJSON(
             content: preview.content,
@@ -116,16 +117,30 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         )
 
         let content = """
+        <div id="preview-notice-stack" class="preview-notice-stack" aria-live="polite"\(hasInitialNotice)>
+          \(truncationNotice)
+          <div id="preview-renderer-notice" class="preview-notice" hidden></div>
+          <div id="preview-runtime-notice" class="preview-notice" hidden></div>
+        </div>
         <div id="preview-root" class="preview-render-root" aria-live="polite"></div>
-        <div id="preview-renderer-notice" class="preview-notice" hidden></div>
-        <div id="preview-runtime-notice" class="preview-notice" hidden></div>
         <script id="preview-payload" type="application/json">\(renderPayload)</script>
         <script>
         (async () => {
           const root = document.getElementById("preview-root");
+          const noticeStack = document.getElementById("preview-notice-stack");
           const payloadElement = document.getElementById("preview-payload");
           const rendererNotice = document.getElementById("preview-renderer-notice");
           const runtimeNotice = document.getElementById("preview-runtime-notice");
+
+          const syncNoticeStack = () => {
+            if (!noticeStack) {
+              return;
+            }
+
+            const hasVisibleNotice = Array.from(noticeStack.querySelectorAll(".preview-notice"))
+              .some((element) => !element.hidden);
+            noticeStack.hidden = !hasVisibleNotice;
+          };
 
           if (!root || !payloadElement) {
             return;
@@ -141,6 +156,8 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
               rendererNotice.hidden = !notice;
               rendererNotice.textContent = notice ?? "";
             }
+
+            syncNoticeStack();
 
             const surface = result?.surface;
             if (surface?.lightBackground) {
@@ -163,6 +180,8 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
               runtimeNotice.hidden = false;
               runtimeNotice.textContent = error?.message ?? String(error);
             }
+
+            syncNoticeStack();
           }
         })();
         </script>
@@ -173,7 +192,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             bodyClass: .preview,
             bodyAppearance: previewAppearanceToken(for: previewAppearanceMode),
             bodyStyle: makeBodyStyle(codeFont: codeFont, codeFontSize: codeFontSize),
-            notice: truncationNotice,
+            notice: "",
             content: content
         )
 

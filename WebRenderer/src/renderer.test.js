@@ -104,6 +104,36 @@ describe("renderer bootstrap", () => {
     expect(typeof surface.lightBackground).toBe("string");
   });
 
+  test("renders prettified JSON with Shiki highlighting", async () => {
+    const result = await renderPreview({
+      content: "{\"name\":\"FreeLook\",\"enabled\":true,\"items\":[1,2]}",
+      lang: "json",
+      lightTheme: "GitHub Light",
+      darkTheme: "GitHub Dark",
+    });
+    const { html, notice } = result;
+
+    expect(html).toContain("class=\"shiki");
+    expect(html).toContain("\"name\"");
+    expect(html).toContain(">  \"enabled\"");
+    expect(html).toContain(">    1<");
+    expect(notice).toBeNull();
+  });
+
+  test("falls back to raw source with a warning for invalid JSON", async () => {
+    const result = await renderPreview({
+      content: "{\"name\": }",
+      lang: "json",
+      lightTheme: "GitHub Light",
+      darkTheme: "GitHub Dark",
+    });
+    const { html, notice } = result;
+
+    expect(html).toContain("freelook-plain");
+    expect(html).toContain("{&quot;name&quot;: }");
+    expect(notice).toBe("Invalid JSON. Showing the original source.");
+  });
+
   test("installs the FreeLook global API", async () => {
     const target = {};
     const api = installRenderer(target);

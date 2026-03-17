@@ -5,6 +5,7 @@ import bashLanguage from "shiki/dist/langs/bash.mjs";
 import cssLanguage from "shiki/dist/langs/css.mjs";
 import htmlLanguage from "shiki/dist/langs/html.mjs";
 import javascriptLanguage from "shiki/dist/langs/javascript.mjs";
+import jsonLanguage from "shiki/dist/langs/json.mjs";
 import pythonLanguage from "shiki/dist/langs/python.mjs";
 import rubyLanguage from "shiki/dist/langs/ruby.mjs";
 import swiftLanguage from "shiki/dist/langs/swift.mjs";
@@ -51,13 +52,14 @@ const THEME_MODULE_MAP = {
 
 const THEME_NAME_MAP = Object.fromEntries(themeManifest.themes.map((theme) => [theme.displayName, theme.id]));
 
-const SUPPORTED_SOURCE_LANGUAGES = ["bash", "css", "html", "javascript", "python", "ruby", "swift", "typescript"];
+const SUPPORTED_SOURCE_LANGUAGES = ["bash", "css", "html", "javascript", "json", "python", "ruby", "swift", "typescript"];
 
 const SOURCE_LANGUAGE_REGISTRATIONS = [
   bashLanguage,
   cssLanguage,
   htmlLanguage,
   javascriptLanguage,
+  jsonLanguage,
   pythonLanguage,
   rubyLanguage,
   swiftLanguage,
@@ -95,6 +97,10 @@ export function normalizeLanguageName(languageName) {
 
 function isMarkdownLanguage(languageName) {
   return languageName === "markdown";
+}
+
+function isJSONLanguage(languageName) {
+  return languageName === "json";
 }
 
 function getHighlighter() {
@@ -209,6 +215,10 @@ async function renderMarkdownDocument(content) {
   return `<article class="markdown-body">${markdownParser.render(content)}</article>`;
 }
 
+function formatJSONDocument(content) {
+  return `${JSON.stringify(JSON.parse(content), null, 2)}\n`;
+}
+
 function resolveThemeSurface(themeId) {
   const theme = THEME_MODULE_MAP[themeId];
   const colors = theme?.colors ?? {};
@@ -246,6 +256,18 @@ function makeRenderResult({
   };
 }
 
+async function renderHighlightedSource(content, lang, lightTheme, darkTheme) {
+  const highlighter = await getHighlighter();
+
+  return highlighter.codeToHtml(content, {
+    lang,
+    themes: {
+      light: normalizeThemeName(lightTheme, DEFAULT_LIGHT_THEME),
+      dark: normalizeThemeName(darkTheme, DEFAULT_DARK_THEME),
+    },
+  });
+}
+
 export async function renderPreview({
   content = "",
   lang = "text",
@@ -260,6 +282,23 @@ export async function renderPreview({
     });
   }
 
+  if (isJSONLanguage(lang)) {
+    try {
+      return makeRenderResult({
+        html: await renderHighlightedSource(formatJSONDocument(content), "json", lightTheme, darkTheme),
+        lightTheme,
+        darkTheme,
+      });
+    } catch {
+      return makeRenderResult({
+        html: renderPlainText(content, lang),
+        lightTheme,
+        darkTheme,
+        notice: "Invalid JSON. Showing the original source.",
+      });
+    }
+  }
+
   const normalizedLanguage = normalizeLanguageName(lang);
 
   if (!normalizedLanguage) {
@@ -270,19 +309,9 @@ export async function renderPreview({
     });
   }
 
-  const highlighter = await getHighlighter();
-
   try {
-    const html = highlighter.codeToHtml(content, {
-      lang: normalizedLanguage,
-      themes: {
-        light: normalizeThemeName(lightTheme, DEFAULT_LIGHT_THEME),
-        dark: normalizeThemeName(darkTheme, DEFAULT_DARK_THEME),
-      },
-    });
-
     return makeRenderResult({
-      html,
+      html: await renderHighlightedSource(content, normalizedLanguage, lightTheme, darkTheme),
       lightTheme,
       darkTheme,
     });
