@@ -14,6 +14,7 @@ import githubLightTheme from "shiki/dist/themes/github-light.mjs";
 import nordTheme from "shiki/dist/themes/nord.mjs";
 import oneDarkProTheme from "shiki/dist/themes/one-dark-pro.mjs";
 import oneLightTheme from "shiki/dist/themes/one-light.mjs";
+import solarizedLightTheme from "shiki/dist/themes/solarized-light.mjs";
 import { createOnigurumaEngine } from "shiki/engine/oniguruma";
 import onigWasm from "shiki/wasm";
 
@@ -35,8 +36,7 @@ const THEME_NAME_MAP = {
   "One Dark Pro": "one-dark-pro",
   "Catppuccin Latte": "catppuccin-latte",
   "Catppuccin Mocha": "catppuccin-mocha",
-  // Shiki does not currently bundle a light Nord variant, so keep a safe fallback.
-  "Nord Light": "github-light",
+  "Solarized Light": "solarized-light",
   "Nord": "nord",
 };
 
@@ -58,6 +58,7 @@ const THEME_REGISTRATIONS = [
   githubDarkTheme,
   oneLightTheme,
   oneDarkProTheme,
+  solarizedLightTheme,
   catppuccinLatteTheme,
   catppuccinMochaTheme,
   nordTheme,

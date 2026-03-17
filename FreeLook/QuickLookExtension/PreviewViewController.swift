@@ -50,20 +50,20 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         let resourceValues = try url.resourceValues(forKeys: [.contentTypeKey])
         let contentType = resourceValues.contentType
         let languageIdentifier = UTIMapper.languageIdentifier(for: contentType)
-        let typeIdentifier = contentType?.identifier ?? "unknown"
 
         do {
             let preview = try PreviewFileLoader.loadPreview(for: url)
-            let themeSnapshot = loadThemeSnapshot()
+            let appearanceSnapshot = loadAppearanceSnapshot()
 
             await MainActor.run {
                 loadPreviewHTML(
                     fileName: url.lastPathComponent,
-                    typeIdentifier: typeIdentifier,
                     languageIdentifier: languageIdentifier,
                     preview: preview,
-                    lightTheme: themeSnapshot.lightTheme,
-                    darkTheme: themeSnapshot.darkTheme
+                    lightTheme: appearanceSnapshot.lightTheme,
+                    darkTheme: appearanceSnapshot.darkTheme,
+                    codeFont: appearanceSnapshot.codeFont,
+                    codeFontSize: appearanceSnapshot.codeFontSize
                 )
             }
         } catch {
@@ -74,15 +74,19 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     private func loadStateHTML(title: String, body: String) {
+        let content = """
+        <section class="state-panel" role="status" aria-live="polite">
+          <p class="state-title">\(escapeHTML(title))</p>
+          <p class="state-copy">\(escapeHTML(body))</p>
+        </section>
+        """
+
         let html = renderTemplate(
             pageTitle: title,
             bodyClass: .state,
-            eyebrow: "",
-            title: title,
-            lead: "<p class=\"preview-lead\">\(escapeHTML(body))</p>",
+            bodyStyle: "",
             notice: "",
-            content: "",
-            meta: ""
+            content: content
         )
 
         loadRenderedHTML(html)
@@ -90,21 +94,16 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
 
     private func loadPreviewHTML(
         fileName: String,
-        typeIdentifier: String,
         languageIdentifier: String,
         preview: PreviewFileLoadResult,
         lightTheme: String,
-        darkTheme: String
+        darkTheme: String,
+        codeFont: String,
+        codeFontSize: Int
     ) {
         let truncationNotice = preview.didTruncate
             ? "<div class=\"preview-notice\">Preview truncated to the first 500 KB.</div>"
             : ""
-        let lead = """
-        <p class="preview-lead">
-          FreeLook decoded this preview as <span class="preview-inline-code">\(escapeHTML(preview.encodingName))</span>
-          and resolved the file type to <span class="preview-inline-code">\(escapeHTML(languageIdentifier))</span>.
-        </p>
-        """
 
         let renderPayload = makeRenderPayloadJSON(
             content: preview.content,
@@ -131,6 +130,30 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             const payload = JSON.parse(payloadElement.textContent || "{}");
             const html = await window.FreeLook.render(payload);
             root.innerHTML = html;
+
+            const highlightedBlock = root.querySelector(".shiki");
+            if (highlightedBlock) {
+              const lightBackground = highlightedBlock.style.backgroundColor?.trim();
+              const lightForeground = highlightedBlock.style.color?.trim();
+              const darkBackground = highlightedBlock.style.getPropertyValue("--shiki-dark-bg")?.trim();
+              const darkForeground = highlightedBlock.style.getPropertyValue("--shiki-dark")?.trim();
+
+              if (lightBackground) {
+                document.body.style.setProperty("--preview-light-surface-bg", lightBackground);
+              }
+
+              if (lightForeground) {
+                document.body.style.setProperty("--preview-light-surface-fg", lightForeground);
+              }
+
+              if (darkBackground) {
+                document.body.style.setProperty("--preview-dark-surface-bg", darkBackground);
+              }
+
+              if (darkForeground) {
+                document.body.style.setProperty("--preview-dark-surface-fg", darkForeground);
+              }
+            }
           } catch (error) {
             if (runtimeNotice) {
               runtimeNotice.hidden = false;
@@ -141,25 +164,12 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         </script>
         """
 
-        let meta = """
-        <footer class="preview-meta">
-          <div class="preview-meta-row"><span class="preview-meta-label">File</span><code>\(escapeHTML(fileName))</code></div>
-          <div class="preview-meta-row"><span class="preview-meta-label">UTType</span><code>\(escapeHTML(typeIdentifier))</code></div>
-          <div class="preview-meta-row"><span class="preview-meta-label">Light Theme</span><code>\(escapeHTML(lightTheme))</code></div>
-          <div class="preview-meta-row"><span class="preview-meta-label">Dark Theme</span><code>\(escapeHTML(darkTheme))</code></div>
-          <div class="preview-meta-row"><span class="preview-meta-label">Truncated</span><code>\(preview.didTruncate ? "yes (first 500 KB)" : "no")</code></div>
-        </footer>
-        """
-
         let html = renderTemplate(
             pageTitle: fileName,
             bodyClass: .preview,
-            eyebrow: "<p class=\"preview-eyebrow\">FreeLook Preview</p>",
-            title: fileName,
-            lead: lead,
+            bodyStyle: makeBodyStyle(codeFont: codeFont, codeFontSize: codeFontSize),
             notice: truncationNotice,
-            content: content,
-            meta: meta
+            content: content
         )
 
         loadRenderedHTML(html)
@@ -168,19 +178,15 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     private func renderTemplate(
         pageTitle: String,
         bodyClass: BodyClass,
-        eyebrow: String,
-        title: String,
-        lead: String,
+        bodyStyle: String,
         notice: String,
-        content: String,
-        meta: String
+        content: String
     ) -> String {
         guard var template = loadTemplate(named: "template", withExtension: "html") else {
             return """
             <!doctype html>
             <html lang="en">
             <body>
-              <h1>\(escapeHTML(pageTitle))</h1>
               \(content)
             </body>
             </html>
@@ -190,12 +196,9 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         let replacements = [
             "{{PAGE_TITLE}}": escapeHTML(pageTitle),
             "{{BODY_CLASS}}": bodyClass.rawValue,
-            "{{EYEBROW}}": eyebrow,
-            "{{TITLE}}": escapeHTML(title),
-            "{{LEAD}}": lead,
+            "{{BODY_STYLE}}": escapeHTML(bodyStyle),
             "{{NOTICE}}": notice,
             "{{CONTENT}}": content,
-            "{{META}}": meta,
         ]
 
         for (token, value) in replacements {
@@ -243,11 +246,23 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         Bundle.main.resourceURL
     }
 
-    private func loadThemeSnapshot() -> (lightTheme: String, darkTheme: String) {
+    private func loadAppearanceSnapshot() -> (lightTheme: String, darkTheme: String, codeFont: String, codeFontSize: Int) {
         let defaults = SharedPreviewSettings.userDefaults()
         let lightTheme = defaults.string(forKey: SharedPreviewSettings.lightThemeKey) ?? SharedPreviewSettings.defaultLightTheme
         let darkTheme = defaults.string(forKey: SharedPreviewSettings.darkThemeKey) ?? SharedPreviewSettings.defaultDarkTheme
-        return (lightTheme, darkTheme)
+        let codeFont = SharedPreviewSettings.normalizedCodeFont(
+            defaults.string(forKey: SharedPreviewSettings.codeFontKey)
+        )
+        let codeFontSize = SharedPreviewSettings.normalizedCodeFontSize(
+            defaults.object(forKey: SharedPreviewSettings.codeFontSizeKey)
+        )
+
+        return (lightTheme, darkTheme, codeFont, codeFontSize)
+    }
+
+    private func makeBodyStyle(codeFont: String, codeFontSize: Int) -> String {
+        let codeFontStack = SharedPreviewSettings.codeFontStack(for: codeFont)
+        return "--preview-code-font: \(codeFontStack); --preview-code-font-size: \(codeFontSize)px;"
     }
 
     private func escapeHTML(_ value: String) -> String {

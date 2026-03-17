@@ -39,6 +39,30 @@ struct ContentView: View {
                 .pickerStyle(.menu)
             }
 
+            GroupBox("Code Font") {
+                Picker("Code Font", selection: $settingsStore.codeFont) {
+                    ForEach(SettingsStore.codeFontOptions, id: \.self) { font in
+                        Text(font).tag(font)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+            }
+
+            GroupBox("Code Size") {
+                HStack {
+                    Text("\(settingsStore.codeFontSize) pt")
+                        .font(.system(.body, design: .monospaced))
+                    Spacer()
+                    Stepper(
+                        "Code Size",
+                        value: $settingsStore.codeFontSize,
+                        in: SettingsStore.minimumCodeFontSize...SettingsStore.maximumCodeFontSize
+                    )
+                    .labelsHidden()
+                }
+            }
+
             Toggle("Quit after closing last window", isOn: $settingsStore.quitAfterLastWindowClosed)
 
             VStack(alignment: .leading, spacing: 6) {
@@ -47,6 +71,8 @@ struct ContentView: View {
                 Text("Suite: `group.net.paradigmx.FreeLook`")
                 Text("Light: `\(settingsStore.lightTheme)`")
                 Text("Dark: `\(settingsStore.darkTheme)`")
+                Text("Code Font: `\(settingsStore.codeFont)`")
+                Text("Code Size: `\(settingsStore.codeFontSize)pt`")
                 Text("Quit After Close: `\(settingsStore.quitAfterLastWindowClosed ? "true" : "false")`")
             }
             .font(.system(.body, design: .monospaced))

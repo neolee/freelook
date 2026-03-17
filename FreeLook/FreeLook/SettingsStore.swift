@@ -13,13 +13,15 @@ final class SettingsStore: ObservableObject {
     static let appGroupSuiteName = SharedPreviewSettings.appGroupSuiteName
     static let lightThemeKey = SharedPreviewSettings.lightThemeKey
     static let darkThemeKey = SharedPreviewSettings.darkThemeKey
+    static let codeFontKey = SharedPreviewSettings.codeFontKey
+    static let codeFontSizeKey = SharedPreviewSettings.codeFontSizeKey
     static let quitAfterLastWindowClosedKey = SharedPreviewSettings.quitAfterLastWindowClosedKey
 
     static let lightThemeOptions = [
         "GitHub Light",
         "One Light",
         "Catppuccin Latte",
-        "Nord Light",
+        "Solarized Light",
     ]
 
     static let darkThemeOptions = [
@@ -29,8 +31,13 @@ final class SettingsStore: ObservableObject {
         "Nord",
     ]
 
+    static let codeFontOptions = SharedPreviewSettings.codeFontOptions
     static let defaultLightTheme = SharedPreviewSettings.defaultLightTheme
     static let defaultDarkTheme = SharedPreviewSettings.defaultDarkTheme
+    static let defaultCodeFont = SharedPreviewSettings.defaultCodeFont
+    static let minimumCodeFontSize = SharedPreviewSettings.minimumCodeFontSize
+    static let maximumCodeFontSize = SharedPreviewSettings.maximumCodeFontSize
+    static let defaultCodeFontSize = SharedPreviewSettings.defaultCodeFontSize
     static let defaultQuitAfterLastWindowClosed = SharedPreviewSettings.defaultQuitAfterLastWindowClosed
 
     @Published var lightTheme: String {
@@ -42,6 +49,18 @@ final class SettingsStore: ObservableObject {
     @Published var darkTheme: String {
         didSet {
             persistDarkTheme()
+        }
+    }
+
+    @Published var codeFont: String {
+        didSet {
+            persistCodeFont()
+        }
+    }
+
+    @Published var codeFontSize: Int {
+        didSet {
+            persistCodeFontSize()
         }
     }
 
@@ -65,6 +84,12 @@ final class SettingsStore: ObservableObject {
             allowedThemes: Self.darkThemeOptions,
             fallbackTheme: Self.defaultDarkTheme
         )
+        self.codeFont = SharedPreviewSettings.normalizedCodeFont(
+            userDefaults.string(forKey: Self.codeFontKey)
+        )
+        self.codeFontSize = SharedPreviewSettings.normalizedCodeFontSize(
+            userDefaults.object(forKey: Self.codeFontSizeKey)
+        )
         self.quitAfterLastWindowClosed = userDefaults.object(forKey: Self.quitAfterLastWindowClosedKey) as? Bool
             ?? Self.defaultQuitAfterLastWindowClosed
 
@@ -74,12 +99,16 @@ final class SettingsStore: ObservableObject {
     func resetToDefaults() {
         lightTheme = Self.defaultLightTheme
         darkTheme = Self.defaultDarkTheme
+        codeFont = Self.defaultCodeFont
+        codeFontSize = Self.defaultCodeFontSize
         quitAfterLastWindowClosed = Self.defaultQuitAfterLastWindowClosed
     }
 
     private func persistCurrentValues() {
         userDefaults.set(lightTheme, forKey: Self.lightThemeKey)
         userDefaults.set(darkTheme, forKey: Self.darkThemeKey)
+        userDefaults.set(codeFont, forKey: Self.codeFontKey)
+        userDefaults.set(codeFontSize, forKey: Self.codeFontSizeKey)
         userDefaults.set(quitAfterLastWindowClosed, forKey: Self.quitAfterLastWindowClosedKey)
     }
 
@@ -111,6 +140,28 @@ final class SettingsStore: ObservableObject {
         }
 
         userDefaults.set(normalized, forKey: Self.darkThemeKey)
+    }
+
+    private func persistCodeFont() {
+        let normalized = SharedPreviewSettings.normalizedCodeFont(codeFont)
+
+        if normalized != codeFont {
+            codeFont = normalized
+            return
+        }
+
+        userDefaults.set(normalized, forKey: Self.codeFontKey)
+    }
+
+    private func persistCodeFontSize() {
+        let normalized = SharedPreviewSettings.normalizedCodeFontSize(codeFontSize)
+
+        if normalized != codeFontSize {
+            codeFontSize = normalized
+            return
+        }
+
+        userDefaults.set(normalized, forKey: Self.codeFontSizeKey)
     }
 
     private static func normalizedTheme(

@@ -21,7 +21,7 @@ describe("renderer bootstrap", () => {
 
   test("normalizes configured theme names", () => {
     expect(normalizeThemeName("GitHub Light", "github-light")).toBe("github-light");
-    expect(normalizeThemeName("Nord Light", "github-light")).toBe("github-light");
+    expect(normalizeThemeName("Solarized Light", "github-light")).toBe("solarized-light");
     expect(normalizeThemeName("Missing Theme", "github-dark")).toBe("github-dark");
   });
 
