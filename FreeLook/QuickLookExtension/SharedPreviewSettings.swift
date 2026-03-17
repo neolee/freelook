@@ -23,14 +23,18 @@ enum SharedPreviewSettings {
         "Always Dark",
     ]
     static let lightThemeOptions = [
+        "Ayu Light",
         "GitHub Light",
         "One Light",
         "Catppuccin Latte",
+        "Everforest Light",
     ]
     static let darkThemeOptions = [
+        "Ayu Dark",
         "GitHub Dark",
         "One Dark Pro",
         "Catppuccin Mocha",
+        "Everforest Dark",
         "Nord",
     ]
     static let defaultPreviewAppearanceMode = "Follow System"

@@ -7,8 +7,12 @@ import pythonLanguage from "shiki/dist/langs/python.mjs";
 import rubyLanguage from "shiki/dist/langs/ruby.mjs";
 import swiftLanguage from "shiki/dist/langs/swift.mjs";
 import typescriptLanguage from "shiki/dist/langs/typescript.mjs";
+import ayuDarkTheme from "shiki/dist/themes/ayu-dark.mjs";
+import ayuLightTheme from "shiki/dist/themes/ayu-light.mjs";
 import catppuccinLatteTheme from "shiki/dist/themes/catppuccin-latte.mjs";
 import catppuccinMochaTheme from "shiki/dist/themes/catppuccin-mocha.mjs";
+import everforestDarkTheme from "shiki/dist/themes/everforest-dark.mjs";
+import everforestLightTheme from "shiki/dist/themes/everforest-light.mjs";
 import githubDarkTheme from "shiki/dist/themes/github-dark.mjs";
 import githubLightTheme from "shiki/dist/themes/github-light.mjs";
 import nordTheme from "shiki/dist/themes/nord.mjs";
@@ -30,12 +34,16 @@ const DEFAULT_LIGHT_THEME = "github-light";
 const DEFAULT_DARK_THEME = "github-dark";
 
 const THEME_NAME_MAP = {
+  "Ayu Light": "ayu-light",
+  "Ayu Dark": "ayu-dark",
   "GitHub Light": "github-light",
   "GitHub Dark": "github-dark",
   "One Light": "one-light",
   "One Dark Pro": "one-dark-pro",
   "Catppuccin Latte": "catppuccin-latte",
   "Catppuccin Mocha": "catppuccin-mocha",
+  "Everforest Light": "everforest-light",
+  "Everforest Dark": "everforest-dark",
   "Solarized Light": "solarized-light",
   "Nord": "nord",
 };
@@ -54,10 +62,14 @@ const SOURCE_LANGUAGE_REGISTRATIONS = [
 ];
 
 const THEME_REGISTRATIONS = [
+  ayuLightTheme,
+  ayuDarkTheme,
   githubLightTheme,
   githubDarkTheme,
   oneLightTheme,
   oneDarkProTheme,
+  everforestLightTheme,
+  everforestDarkTheme,
   solarizedLightTheme,
   catppuccinLatteTheme,
   catppuccinMochaTheme,

@@ -170,8 +170,8 @@ Shiki's dual-theme CSS variable mechanism handles automatic `prefers-color-schem
 
 ### Bundled Themes
 
-Light: GitHub Light, One Light, Catppuccin Latte
-Dark: GitHub Dark, One Dark Pro, Catppuccin Mocha, Nord
+Light: Ayu Light, GitHub Light, One Light, Catppuccin Latte, Everforest Light
+Dark: Ayu Dark, GitHub Dark, One Dark Pro, Catppuccin Mocha, Everforest Dark, Nord
 
 The current theme list is sufficient for the initial renderer rollout. Expanding the theme catalog should only happen after the baseline HTML shell and representative sample files are visually approved.
 

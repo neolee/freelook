@@ -20,6 +20,10 @@ describe("renderer bootstrap", () => {
   });
 
   test("normalizes configured theme names", () => {
+    expect(normalizeThemeName("Ayu Light", "github-light")).toBe("ayu-light");
+    expect(normalizeThemeName("Ayu Dark", "github-dark")).toBe("ayu-dark");
+    expect(normalizeThemeName("Everforest Light", "github-light")).toBe("everforest-light");
+    expect(normalizeThemeName("Everforest Dark", "github-dark")).toBe("everforest-dark");
     expect(normalizeThemeName("GitHub Light", "github-light")).toBe("github-light");
     expect(normalizeThemeName("Solarized Light", "github-light")).toBe("solarized-light");
     expect(normalizeThemeName("Missing Theme", "github-dark")).toBe("github-dark");
