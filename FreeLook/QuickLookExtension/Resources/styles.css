@@ -41,6 +41,40 @@ body.preview-screen {
   color: var(--preview-surface-fg);
 }
 
+body.preview-screen[data-preview-appearance="system"] {
+  color-scheme: light dark;
+}
+
+body.preview-screen[data-preview-appearance="light"] {
+  color-scheme: light;
+  --text-primary: #17212c;
+  --text-secondary: #5e6a78;
+  --rule: rgba(21, 33, 46, 0.09);
+  --inline-code-bg: rgba(25, 40, 56, 0.058);
+  --notice-bg: rgba(28, 81, 173, 0.085);
+  --notice-border: rgba(28, 81, 173, 0.12);
+  --notice-text: #1f4f9f;
+  --state-bg: rgba(255, 255, 255, 0.7);
+  --state-border: rgba(21, 33, 46, 0.08);
+  --preview-surface-bg: var(--preview-light-surface-bg, transparent);
+  --preview-surface-fg: var(--preview-light-surface-fg, var(--text-primary));
+}
+
+body.preview-screen[data-preview-appearance="dark"] {
+  color-scheme: dark;
+  --text-primary: #e7ebef;
+  --text-secondary: #a5b0bc;
+  --rule: rgba(184, 197, 211, 0.14);
+  --inline-code-bg: rgba(174, 188, 204, 0.11);
+  --notice-bg: rgba(129, 169, 255, 0.12);
+  --notice-border: rgba(129, 169, 255, 0.14);
+  --notice-text: #bdd0ff;
+  --state-bg: rgba(23, 25, 28, 0.76);
+  --state-border: rgba(184, 197, 211, 0.12);
+  --preview-surface-bg: var(--preview-dark-surface-bg, transparent);
+  --preview-surface-fg: var(--preview-dark-surface-fg, var(--text-primary));
+}
+
 body.state-screen {
   display: grid;
   place-items: center;
@@ -213,6 +247,10 @@ body.state-screen .page-shell {
   text-underline-offset: 0.16em;
 }
 
+body.preview-screen[data-preview-appearance="dark"] .preview-render-root a {
+  text-decoration-color: rgba(189, 208, 255, 0.44);
+}
+
 .preview-notice {
   width: 100%;
   margin: 0 0 16px;
@@ -255,6 +293,14 @@ body.state-screen .page-shell {
   line-height: 1.65;
 }
 
+body.preview-screen[data-preview-appearance="dark"] .preview-render-root .shiki {
+  color: var(--shiki-dark) !important;
+}
+
+body.preview-screen[data-preview-appearance="dark"] .preview-render-root .shiki span {
+  color: var(--shiki-dark) !important;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --text-primary: #e7ebef;
@@ -268,20 +314,20 @@ body.state-screen .page-shell {
     --state-border: rgba(184, 197, 211, 0.12);
   }
 
-  body.preview-screen {
+  body.preview-screen[data-preview-appearance="system"] {
     --preview-surface-bg: var(--preview-dark-surface-bg, transparent);
     --preview-surface-fg: var(--preview-dark-surface-fg, var(--text-primary));
   }
 
-  .preview-render-root a {
+  body.preview-screen[data-preview-appearance="system"] .preview-render-root a {
     text-decoration-color: rgba(189, 208, 255, 0.44);
   }
 
-  .preview-render-root .shiki {
+  body.preview-screen[data-preview-appearance="system"] .preview-render-root .shiki {
     color: var(--shiki-dark) !important;
   }
 
-  .preview-render-root .shiki span {
+  body.preview-screen[data-preview-appearance="system"] .preview-render-root .shiki span {
     color: var(--shiki-dark) !important;
   }
 }

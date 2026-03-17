@@ -12,29 +12,31 @@ import Testing
 struct SettingsStoreTests {
     @Test func persistsThemeSelectionsAcrossInstances() {
         let defaults = temporaryDefaults()
+        let previewAppearanceMode = SettingsStore.previewAppearanceModeOptions[2]
         let lightTheme = SettingsStore.lightThemeOptions[1]
         let darkTheme = SettingsStore.darkThemeOptions[2]
-        let codeFont = SettingsStore.codeFontOptions[1]
+        let codeFont = SettingsStore.codeFontOptions.dropFirst().first ?? SettingsStore.defaultCodeFont
         let codeFontSize = 17
 
         let store = SettingsStore(userDefaults: defaults)
+        store.previewAppearanceMode = previewAppearanceMode
         store.lightTheme = lightTheme
         store.darkTheme = darkTheme
         store.codeFont = codeFont
         store.codeFontSize = codeFontSize
-        store.quitAfterLastWindowClosed = true
 
         let reloadedStore = SettingsStore(userDefaults: defaults)
 
+        #expect(reloadedStore.previewAppearanceMode == previewAppearanceMode)
         #expect(reloadedStore.lightTheme == lightTheme)
         #expect(reloadedStore.darkTheme == darkTheme)
         #expect(reloadedStore.codeFont == codeFont)
         #expect(reloadedStore.codeFontSize == codeFontSize)
-        #expect(reloadedStore.quitAfterLastWindowClosed == true)
     }
 
     @Test func normalizesInvalidPersistedValues() {
         let defaults = temporaryDefaults()
+        defaults.set("Broken Theme Mode", forKey: SettingsStore.previewAppearanceModeKey)
         defaults.set("Broken Light Theme", forKey: SettingsStore.lightThemeKey)
         defaults.set("Broken Dark Theme", forKey: SettingsStore.darkThemeKey)
         defaults.set("Broken Code Font", forKey: SettingsStore.codeFontKey)
@@ -42,11 +44,11 @@ struct SettingsStoreTests {
 
         let store = SettingsStore(userDefaults: defaults)
 
+        #expect(store.previewAppearanceMode == SettingsStore.defaultPreviewAppearanceMode)
         #expect(store.lightTheme == SettingsStore.defaultLightTheme)
         #expect(store.darkTheme == SettingsStore.defaultDarkTheme)
         #expect(store.codeFont == SettingsStore.defaultCodeFont)
         #expect(store.codeFontSize == SettingsStore.defaultCodeFontSize)
-        #expect(store.quitAfterLastWindowClosed == SettingsStore.defaultQuitAfterLastWindowClosed)
     }
 
     private func temporaryDefaults() -> UserDefaults {

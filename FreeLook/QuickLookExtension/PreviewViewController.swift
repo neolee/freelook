@@ -60,6 +60,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
                     fileName: url.lastPathComponent,
                     languageIdentifier: languageIdentifier,
                     preview: preview,
+                    previewAppearanceMode: appearanceSnapshot.previewAppearanceMode,
                     lightTheme: appearanceSnapshot.lightTheme,
                     darkTheme: appearanceSnapshot.darkTheme,
                     codeFont: appearanceSnapshot.codeFont,
@@ -84,6 +85,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         let html = renderTemplate(
             pageTitle: title,
             bodyClass: .state,
+            bodyAppearance: "system",
             bodyStyle: "",
             notice: "",
             content: content
@@ -96,6 +98,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         fileName: String,
         languageIdentifier: String,
         preview: PreviewFileLoadResult,
+        previewAppearanceMode: String,
         lightTheme: String,
         darkTheme: String,
         codeFont: String,
@@ -167,6 +170,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         let html = renderTemplate(
             pageTitle: fileName,
             bodyClass: .preview,
+            bodyAppearance: previewAppearanceToken(for: previewAppearanceMode),
             bodyStyle: makeBodyStyle(codeFont: codeFont, codeFontSize: codeFontSize),
             notice: truncationNotice,
             content: content
@@ -178,6 +182,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     private func renderTemplate(
         pageTitle: String,
         bodyClass: BodyClass,
+        bodyAppearance: String,
         bodyStyle: String,
         notice: String,
         content: String
@@ -196,6 +201,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         let replacements = [
             "{{PAGE_TITLE}}": escapeHTML(pageTitle),
             "{{BODY_CLASS}}": bodyClass.rawValue,
+            "{{BODY_APPEARANCE}}": escapeHTML(bodyAppearance),
             "{{BODY_STYLE}}": escapeHTML(bodyStyle),
             "{{NOTICE}}": notice,
             "{{CONTENT}}": content,
@@ -246,10 +252,17 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         Bundle.main.resourceURL
     }
 
-    private func loadAppearanceSnapshot() -> (lightTheme: String, darkTheme: String, codeFont: String, codeFontSize: Int) {
+    private func loadAppearanceSnapshot() -> (previewAppearanceMode: String, lightTheme: String, darkTheme: String, codeFont: String, codeFontSize: Int) {
         let defaults = SharedPreviewSettings.userDefaults()
-        let lightTheme = defaults.string(forKey: SharedPreviewSettings.lightThemeKey) ?? SharedPreviewSettings.defaultLightTheme
-        let darkTheme = defaults.string(forKey: SharedPreviewSettings.darkThemeKey) ?? SharedPreviewSettings.defaultDarkTheme
+        let previewAppearanceMode = SharedPreviewSettings.normalizedPreviewAppearanceMode(
+            defaults.string(forKey: SharedPreviewSettings.previewAppearanceModeKey)
+        )
+        let lightTheme = SharedPreviewSettings.normalizedLightTheme(
+            defaults.string(forKey: SharedPreviewSettings.lightThemeKey)
+        )
+        let darkTheme = SharedPreviewSettings.normalizedDarkTheme(
+            defaults.string(forKey: SharedPreviewSettings.darkThemeKey)
+        )
         let codeFont = SharedPreviewSettings.normalizedCodeFont(
             defaults.string(forKey: SharedPreviewSettings.codeFontKey)
         )
@@ -257,12 +270,23 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             defaults.object(forKey: SharedPreviewSettings.codeFontSizeKey)
         )
 
-        return (lightTheme, darkTheme, codeFont, codeFontSize)
+        return (previewAppearanceMode, lightTheme, darkTheme, codeFont, codeFontSize)
     }
 
     private func makeBodyStyle(codeFont: String, codeFontSize: Int) -> String {
         let codeFontStack = SharedPreviewSettings.codeFontStack(for: codeFont)
         return "--preview-code-font: \(codeFontStack); --preview-code-font-size: \(codeFontSize)px;"
+    }
+
+    private func previewAppearanceToken(for mode: String) -> String {
+        switch SharedPreviewSettings.normalizedPreviewAppearanceMode(mode) {
+        case "Always Light":
+            return "light"
+        case "Always Dark":
+            return "dark"
+        default:
+            return "system"
+        }
     }
 
     private func escapeHTML(_ value: String) -> String {

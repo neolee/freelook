@@ -16,5 +16,6 @@ struct FreeLookApp: App {
         WindowGroup {
             ContentView(settingsStore: settingsStore)
         }
+        .defaultSize(width: 620, height: 500)
     }
 }

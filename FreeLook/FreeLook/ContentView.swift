@@ -9,80 +9,144 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var settingsStore: SettingsStore
+    private let sectionHorizontalPadding: CGFloat = 18
+    private let rowLabelWidth: CGFloat = 116
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("FreeLook")
-                    .font(.system(size: 28, weight: .semibold))
-                Text("Preview preferences")
-                    .foregroundStyle(.secondary)
-            }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 26) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("FreeLook")
+                        .font(.system(size: 26, weight: .semibold))
+                    Text("Preview preferences")
+                        .foregroundStyle(.secondary)
+                }
 
-            GroupBox("Light Theme") {
-                Picker("Light Theme", selection: $settingsStore.lightTheme) {
-                    ForEach(SettingsStore.lightThemeOptions, id: \.self) { theme in
-                        Text(theme).tag(theme)
+                settingsSection("Theme") {
+                    VStack(alignment: .leading, spacing: 16) {
+                        segmentedRow(
+                            title: "Theme Mode",
+                            selection: $settingsStore.previewAppearanceMode,
+                            options: SettingsStore.previewAppearanceModeOptions
+                        )
+
+                        pickerRow(
+                            title: "Light Theme",
+                            selection: $settingsStore.lightTheme,
+                            options: SettingsStore.lightThemeOptions
+                        )
+
+                        pickerRow(
+                            title: "Dark Theme",
+                            selection: $settingsStore.darkTheme,
+                            options: SettingsStore.darkThemeOptions
+                        )
                     }
                 }
-                .labelsHidden()
-                .pickerStyle(.menu)
-            }
 
-            GroupBox("Dark Theme") {
-                Picker("Dark Theme", selection: $settingsStore.darkTheme) {
-                    ForEach(SettingsStore.darkThemeOptions, id: \.self) { theme in
-                        Text(theme).tag(theme)
+                settingsSection("Typography") {
+                    VStack(alignment: .leading, spacing: 16) {
+                        pickerRow(
+                            title: "Font",
+                            selection: $settingsStore.codeFont,
+                            options: SettingsStore.codeFontOptions
+                        )
+
+                        HStack(alignment: .center, spacing: 18) {
+                            Text("Font Size")
+                                .foregroundStyle(.secondary)
+                                .frame(width: rowLabelWidth, alignment: .leading)
+
+                            HStack(spacing: 12) {
+                                Text("\(settingsStore.codeFontSize) pt")
+                                    .font(.system(.body, design: .monospaced))
+                                    .frame(width: 62, alignment: .leading)
+
+                                Stepper(
+                                    "Font Size",
+                                    value: $settingsStore.codeFontSize,
+                                    in: SettingsStore.minimumCodeFontSize...SettingsStore.maximumCodeFontSize
+                                )
+                                .labelsHidden()
+                            }
+                        }
                     }
                 }
-                .labelsHidden()
-                .pickerStyle(.menu)
-            }
 
-            GroupBox("Code Font") {
-                Picker("Code Font", selection: $settingsStore.codeFont) {
-                    ForEach(SettingsStore.codeFontOptions, id: \.self) { font in
-                        Text(font).tag(font)
-                    }
-                }
-                .labelsHidden()
-                .pickerStyle(.menu)
-            }
-
-            GroupBox("Code Size") {
                 HStack {
-                    Text("\(settingsStore.codeFontSize) pt")
-                        .font(.system(.body, design: .monospaced))
                     Spacer()
-                    Stepper(
-                        "Code Size",
-                        value: $settingsStore.codeFontSize,
-                        in: SettingsStore.minimumCodeFontSize...SettingsStore.maximumCodeFontSize
-                    )
-                    .labelsHidden()
+                    Button("Reset to Defaults") {
+                        settingsStore.resetToDefaults()
+                    }
                 }
             }
-
-            Toggle("Quit after closing last window", isOn: $settingsStore.quitAfterLastWindowClosed)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Stored in App Group defaults")
-                    .font(.headline)
-                Text("Suite: `group.net.paradigmx.FreeLook`")
-                Text("Light: `\(settingsStore.lightTheme)`")
-                Text("Dark: `\(settingsStore.darkTheme)`")
-                Text("Code Font: `\(settingsStore.codeFont)`")
-                Text("Code Size: `\(settingsStore.codeFontSize)pt`")
-                Text("Quit After Close: `\(settingsStore.quitAfterLastWindowClosed ? "true" : "false")`")
-            }
-            .font(.system(.body, design: .monospaced))
-
-            Button("Reset to Defaults") {
-                settingsStore.resetToDefaults()
-            }
+            .padding(24)
         }
-        .padding(28)
-        .frame(minWidth: 420, minHeight: 320, alignment: .topLeading)
+        .frame(minWidth: 560, minHeight: 500, alignment: .topLeading)
+    }
+
+    private func pickerRow(
+        title: String,
+        selection: Binding<String>,
+        options: [String]
+    ) -> some View {
+        HStack(alignment: .center, spacing: 18) {
+            Text(title)
+                .foregroundStyle(.secondary)
+                .frame(width: rowLabelWidth, alignment: .leading)
+
+            Picker(title, selection: selection) {
+                ForEach(options, id: \.self) { option in
+                    Text(option).tag(option)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func segmentedRow(
+        title: String,
+        selection: Binding<String>,
+        options: [String]
+    ) -> some View {
+        HStack(alignment: .center, spacing: 18) {
+            Text(title)
+                .foregroundStyle(.secondary)
+                .frame(width: rowLabelWidth, alignment: .leading)
+
+            Picker(title, selection: selection) {
+                ForEach(options, id: \.self) { option in
+                    Text(option).tag(option)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+            .fixedSize(horizontal: true, vertical: false)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func settingsSection<Content: View>(
+        _ title: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.system(size: 13, weight: .semibold))
+                .padding(.leading, sectionHorizontalPadding)
+
+            VStack(alignment: .leading, spacing: 0) {
+                content()
+            }
+            .padding(.horizontal, sectionHorizontalPadding)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.primary.opacity(0.04))
+            )
+        }
     }
 }
 
