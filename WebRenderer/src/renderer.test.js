@@ -15,6 +15,11 @@ describe("renderer bootstrap", () => {
 
   test("normalizes supported source languages", () => {
     expect(normalizeLanguageName("javascript")).toBe("javascript");
+    expect(normalizeLanguageName("rust")).toBe("rust");
+    expect(normalizeLanguageName("go")).toBe("go");
+    expect(normalizeLanguageName("java")).toBe("java");
+    expect(normalizeLanguageName("haskell")).toBe("haskell");
+    expect(normalizeLanguageName("clojure")).toBe("clojure");
     expect(normalizeLanguageName("text")).toBeNull();
     expect(normalizeLanguageName("unknown")).toBeNull();
   });

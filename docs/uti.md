@@ -49,6 +49,62 @@ Important implication:
 - the preferred `UTType` is not guaranteed to be the obvious or semantically best one, and
 - Quick Look provider selection depends on the resolved type, not on the user's default editor alone.
 
+### Observed third-party typo case: `org.cloture.cloture`
+
+The machine originally resolved Clojure source files in a split way:
+
+- `.clj` and `.cljs` resolved to `org.cloture.cloture`
+- `.cljc` resolved to `org.clojure.script`
+
+The `org.cloture.cloture` identifier is not a system type and is not a FreeLook declaration. It comes from a third-party app:
+
+- `Kaleidoscope.app` declares `UTTypeIdentifier = org.cloture.cloture`
+- the same declaration uses `UTTypeDescription = Clojure Source Code`
+- the same declaration points to `https://clojure.org`
+
+So this is a real LaunchServices registration typo in an installed app, not a transcription mistake in FreeLook.
+
+After FreeLook added `net.paradigmx.clojure-source` and LaunchServices was rebuilt, the current machine now resolves `.cljc` to `net.paradigmx.clojure-source`, while `.clj` and `.cljs` still resolve to `org.cloture.cloture`.
+
+Practical implication:
+
+- when a real machine resolves an important developer file to a semantically meaningful but incorrectly named third-party UTI, FreeLook may still need to claim that exact identifier if the goal is to support the file type on that machine,
+- but the case should be documented explicitly as a special-case compatibility decision rather than treated as a clean canonical type.
+
+### Product-defined normalization case: `net.paradigmx.clojure-source`
+
+FreeLook now declares its own exported UTI for Clojure source:
+
+- `net.paradigmx.clojure-source`
+
+It exists to provide one product-defined semantic entry point for the three source extensions:
+
+- `.clj`
+- `.cljs`
+- `.cljc`
+
+This declaration does not replace the need to remain compatible with real-world resolved types such as `org.cloture.cloture` and `org.clojure.script`. It exists so that machines without a stable or semantically useful Clojure registration can still receive a coherent Clojure source type from FreeLook's own bundle metadata.
+
+The product-facing description used by FreeLook for this type is `Clojure Source`, matching the naming style already used for `CommonJS Source`.
+
+### Product-defined normalization case: `net.paradigmx.edn-document`
+
+FreeLook now also declares a separate EDN type:
+
+- `net.paradigmx.edn-document`
+
+This is intentionally separate from `net.paradigmx.clojure-source` because EDN is data notation, not source code in the same sense as `.clj`, `.cljs`, or `.cljc`.
+
+On the current machine, `.edn` resolves to the polluted third-party identifier:
+
+- `com.adobe.edn`
+
+with the localized kind string:
+
+- `Adobe DRM Activation Key (EDN)`
+
+FreeLook intentionally does not treat `com.adobe.edn` as a supported product surface. The product-defined path for `.edn` is `net.paradigmx.edn-document`; the Adobe identifier is documented here only as an observed pollution case on the current machine.
+
 ## Working model
 
 The local experiments support the following model:

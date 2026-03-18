@@ -2,11 +2,16 @@ import { createHighlighterCore } from "shiki/core";
 import MarkdownIt from "markdown-it";
 import { fromHighlighter } from "@shikijs/markdown-it";
 import bashLanguage from "shiki/dist/langs/bash.mjs";
+import clojureLanguage from "shiki/dist/langs/clojure.mjs";
 import cssLanguage from "shiki/dist/langs/css.mjs";
+import goLanguage from "shiki/dist/langs/go.mjs";
+import haskellLanguage from "shiki/dist/langs/haskell.mjs";
 import htmlLanguage from "shiki/dist/langs/html.mjs";
+import javaLanguage from "shiki/dist/langs/java.mjs";
 import javascriptLanguage from "shiki/dist/langs/javascript.mjs";
 import jsonLanguage from "shiki/dist/langs/json.mjs";
 import pythonLanguage from "shiki/dist/langs/python.mjs";
+import rustLanguage from "shiki/dist/langs/rust.mjs";
 import rubyLanguage from "shiki/dist/langs/ruby.mjs";
 import swiftLanguage from "shiki/dist/langs/swift.mjs";
 import typescriptLanguage from "shiki/dist/langs/typescript.mjs";
@@ -54,15 +59,36 @@ const THEME_MODULE_MAP = {
 
 const THEME_NAME_MAP = Object.fromEntries(themeManifest.themes.map((theme) => [theme.displayName, theme.id]));
 
-const SUPPORTED_SOURCE_LANGUAGES = ["bash", "css", "html", "javascript", "json", "python", "ruby", "swift", "typescript", "xml"];
+const SUPPORTED_SOURCE_LANGUAGES = [
+  "bash",
+  "clojure",
+  "css",
+  "go",
+  "haskell",
+  "html",
+  "java",
+  "javascript",
+  "json",
+  "python",
+  "ruby",
+  "rust",
+  "swift",
+  "typescript",
+  "xml",
+];
 
 const SOURCE_LANGUAGE_REGISTRATIONS = [
   bashLanguage,
+  clojureLanguage,
   cssLanguage,
+  goLanguage,
+  haskellLanguage,
   htmlLanguage,
+  javaLanguage,
   javascriptLanguage,
   jsonLanguage,
   pythonLanguage,
+  rustLanguage,
   rubyLanguage,
   swiftLanguage,
   typescriptLanguage,

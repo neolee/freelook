@@ -48,6 +48,32 @@ struct UTIMapperTests {
         #expect(UTIMapper.languageIdentifier(for: UTType("com.microsoft.typescript")) == "typescript")
     }
 
+    @Test func mapsRust() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("org.rust-lang.rust")) == "rust")
+    }
+
+    @Test func mapsGo() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("org.golang.golang")) == "go")
+    }
+
+    @Test func mapsJava() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("com.sun.java-source")) == "java")
+    }
+
+    @Test func mapsHaskell() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("org.haskell.haskell")) == "haskell")
+    }
+
+    @Test func mapsClojure() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("net.paradigmx.clojure-source")) == "clojure")
+        #expect(UTIMapper.languageIdentifier(for: UTType("org.cloture.cloture")) == "clojure")
+        if let clojureScriptType = UTType("org.clojure.script") {
+            #expect(UTIMapper.languageIdentifier(for: clojureScriptType) == "clojure")
+        }
+        #expect(UTIMapper.languageIdentifier(for: UTType("net.paradigmx.edn-document")) == "clojure")
+        #expect(UTIMapper.languageIdentifier(for: UTType("com.adobe.edn")) == "text")
+    }
+
     @Test func mapsShellScript() {
         let contentType = UTType("public.shell-script")
         #expect(UTIMapper.languageIdentifier(for: contentType) == "bash")

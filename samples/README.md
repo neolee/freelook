@@ -18,8 +18,13 @@ This directory contains committed sample files for design review, manual Quick L
 - `compact.xml` — valid single-line XML for prettify verification
 - `invalid.xml` — invalid XML fallback and warning state
 - `Example.swift` — Swift syntax highlighting sample
+- `Example.java` — Java syntax highlighting sample
 - `example.py` — Python syntax highlighting sample
 - `example.js` — JavaScript syntax highlighting sample
+- `example.rs` — Rust syntax highlighting sample
+- `example.go` — Go syntax highlighting sample
+- `example.hs` — Haskell syntax highlighting sample
+- `example.clj` — Clojure syntax highlighting sample
 - `example.sh` — shell syntax highlighting sample
 - `long-line.txt` — overflow and wrapping review sample
 

@@ -20,6 +20,26 @@ enum UTIMapper {
         "com.microsoft.typescript",
         "org.typescriptlang.typescript"
     )
+    private static let rustTypes = supportedTypes(
+        "org.rust-lang.rust"
+    )
+    private static let goTypes = supportedTypes(
+        "org.golang.golang"
+    )
+    private static let javaTypes = supportedTypes(
+        "com.sun.java-source"
+    )
+    private static let haskellTypes = supportedTypes(
+        "org.haskell.haskell"
+    )
+    private static let clojureTypes = supportedTypes(
+        "net.paradigmx.clojure-source",
+        "org.cloture.cloture",
+        "org.clojure.script"
+    )
+    private static let ednTypes = supportedTypes(
+        "net.paradigmx.edn-document"
+    )
     private static let cssTypes = supportedTypes(
         "public.css",
         "org.w3.css"
@@ -66,6 +86,30 @@ enum UTIMapper {
 
         if matches(contentType, anyOf: typeScriptTypes) {
             return "typescript"
+        }
+
+        if matches(contentType, anyOf: rustTypes) {
+            return "rust"
+        }
+
+        if matches(contentType, anyOf: goTypes) {
+            return "go"
+        }
+
+        if matches(contentType, anyOf: javaTypes) {
+            return "java"
+        }
+
+        if matches(contentType, anyOf: haskellTypes) {
+            return "haskell"
+        }
+
+        if matches(contentType, anyOf: clojureTypes) {
+            return "clojure"
+        }
+
+        if matches(contentType, anyOf: ednTypes) {
+            return "clojure"
         }
 
         if matches(contentType, anyOf: [shellScriptType]) {

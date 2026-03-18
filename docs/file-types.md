@@ -55,7 +55,7 @@ These should be implemented first.
 | Go | `go` | `.go` | Strong v1.0 target |
 | Java | `java` | `.java` | Strong v1.0 target |
 | Haskell | `haskell` | `.hs`, `.lhs` | Worth supporting even if `UTType` handling needs investigation |
-| Clojure | `clojure` | `.clj`, `.cljs`, `.cljc`, `.edn` | Includes Lisp-family workflow files commonly used with Clojure |
+| Clojure | `clojure` | `.clj`, `.cljs`, `.cljc`, `.edn` | FreeLook defines `net.paradigmx.clojure-source` for source files and `net.paradigmx.edn-document` for EDN; the polluted third-party `com.adobe.edn` path is intentionally not treated as product support |
 
 ### Tier 2: Secondary Mainstream Languages
 
