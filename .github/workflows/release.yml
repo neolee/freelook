@@ -97,8 +97,6 @@ jobs:
             -configuration Release \
             -archivePath build/FreeLook.xcarchive \
             -destination "generic/platform=macOS" \
-            CODE_SIGN_IDENTITY="Developer ID Application" \
-            OTHER_CODE_SIGN_FLAGS="--timestamp" \
             DEVELOPMENT_TEAM=${{ secrets.TEAM_ID }}
 
       - name: Generate Export Options
