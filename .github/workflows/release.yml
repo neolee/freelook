@@ -97,6 +97,8 @@ jobs:
             -configuration Release \
             -archivePath build/FreeLook.xcarchive \
             -destination "generic/platform=macOS" \
+            APP_PROFILE_NAME="${APP_PROFILE_NAME}" \
+            APPEX_PROFILE_NAME="${APPEX_PROFILE_NAME}" \
             DEVELOPMENT_TEAM=${{ secrets.TEAM_ID }}
 
       - name: Generate Export Options
