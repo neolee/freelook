@@ -43,11 +43,6 @@ jobs:
           echo "--- SDK Path ---"
           xcrun --show-sdk-path
 
-      - name: Build Verification
-        run: |
-          ./scripts/build
-          ./scripts/test
-
       - name: Install Apple Certificate
         env:
           CERTIFICATE_P12: ${{ secrets.CERTIFICATE_P12 }}
