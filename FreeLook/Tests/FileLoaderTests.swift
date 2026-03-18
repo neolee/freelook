@@ -59,6 +59,15 @@ struct FileLoaderTests {
         }
     }
 
+    @Test func throwsForBinaryFiles() throws {
+        let data = Data([0x89, 0x50, 0x4E, 0x47, 0x00, 0x01, 0x02, 0x03])
+        let url = try temporaryFile(named: "binary.dat", data: data)
+
+        #expect(throws: FileLoaderError.binaryContent) {
+            try FileLoader.loadPreview(for: url)
+        }
+    }
+
     private func temporaryFile(named fileName: String, data: Data) throws -> URL {
         let directory = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
             .appendingPathComponent(UUID().uuidString, isDirectory: true)

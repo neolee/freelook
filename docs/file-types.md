@@ -55,7 +55,7 @@ These should be implemented first.
 | Go | `go` | `.go` | Strong v1.0 target |
 | Java | `java` | `.java` | Strong v1.0 target |
 | Haskell | `haskell` | `.hs`, `.lhs` | Worth supporting even if `UTType` handling needs investigation |
-| Clojure | `clojure` | `.clj`, `.cljs`, `.cljc`, `.edn` | FreeLook defines `net.paradigmx.clojure-source` for source files and `net.paradigmx.edn-document` for EDN; the polluted third-party `com.adobe.edn` path is intentionally not treated as product support |
+| Clojure | `clojure` | `.clj`, `.cljs`, `.cljc`, `.edn` | FreeLook defines `net.paradigmx.clojure-source` for source files and `net.paradigmx.edn-document` for EDN; source files work on the current machine, while `.edn` remains blocked by the polluted third-party `com.adobe.edn` path |
 
 ### Tier 2: Secondary Mainstream Languages
 
@@ -75,12 +75,12 @@ These are not all “programming languages” in the narrow sense, but they fit 
 
 | Type | Shiki lang | Common extensions / filenames | Notes |
 |---|---|---|---|
-| YAML | `yaml` | `.yml`, `.yaml` | Common infra and config format |
-| TOML | `toml` | `.toml` | Common in Rust, Python, and general tooling |
-| SQL | `sql` | `.sql` | High-value plain source preview |
-| Dockerfile | `docker` | `Dockerfile`, `.dockerfile` | Filename-driven routing may require extra care |
-| Makefile | `make` | `Makefile`, `GNUmakefile`, `.mk`, `.mak` | Mix of filename and extension-driven routing |
-| CMake | `cmake` | `CMakeLists.txt`, `.cmake` | Filename-driven routing may require extra care |
+| YAML | `yaml` | `.yml`, `.yaml` | Support `public.yaml` and `org.yaml.yaml` |
+| TOML | `toml` | `.toml` | Support `io.toml` |
+| SQL | `sql` | `.sql` | Support `org.iso.sql`; also claim `com.sequel-ace.sequel-ace.sql` as a compatibility case on the current machine |
+| Dockerfile | `dockerfile` | `Dockerfile` | Support via product-defined `net.paradigmx.dockerfile`, plus bounded fallback entry points for filename-only routing |
+| Makefile | `makefile` | `Makefile` | Support `public.make-source` |
+| CMake | `cmake` | `CMakeLists.txt`, `.cmake` | `.cmake` is supported; `CMakeLists.txt` still falls back to the system plain-text path on the current machine |
 
 ---
 
@@ -136,6 +136,19 @@ Some useful developer files are routed more by filename than by extension, for e
 - `CMakeLists.txt`
 
 These are worth supporting, but only if the actual system routing path is understood. They should not be forced into the product through broad or messy declarations without a validated route.
+
+The current FreeLook fallback policy is:
+
+- allow `public.content`, `public.unix-executable`, and `public.data` as bounded fallback entry points for developer-oriented text files,
+- detect obvious binary content before rendering, and
+- apply syntax highlighting for filename-driven special cases only through explicit filename fallback rules, not through speculative type claims.
+
+Current consequences on the validated machine:
+
+- `Dockerfile` now routes through the fallback path and renders correctly,
+- `Makefile` already routes semantically through `public.make-source`,
+- `CMakeLists.txt` still follows the system `public.plain-text` path and is not treated as a reliable FreeLook surface,
+- generic `.txt` remains out of scope as a reliable product promise for the same reason.
 
 ---
 

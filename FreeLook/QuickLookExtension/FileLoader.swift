@@ -14,12 +14,15 @@ struct FileLoadResult {
 
 enum FileLoaderError: LocalizedError {
     case couldNotReadFile
+    case binaryContent
     case unsupportedEncoding
 
     var errorDescription: String? {
         switch self {
         case .couldNotReadFile:
             return "FreeLook could not read this file."
+        case .binaryContent:
+            return "FreeLook cannot preview binary content."
         case .unsupportedEncoding:
             return "FreeLook could not decode this file as UTF-8 or ISO Latin 1."
         }
@@ -48,6 +51,10 @@ enum FileLoader {
 
         let didTruncate = rawData.count > maximumPreviewBytes
         let previewData = Data(didTruncate ? rawData.prefix(maximumPreviewBytes) : rawData)
+
+        if looksBinary(previewData) {
+            throw FileLoaderError.binaryContent
+        }
 
         if let content = String(data: previewData, encoding: .utf8) {
             return FileLoadResult(content: content, didTruncate: didTruncate)
@@ -80,5 +87,30 @@ enum FileLoader {
         }
 
         return nil
+    }
+
+    private static func looksBinary(_ data: Data) -> Bool {
+        guard !data.isEmpty else {
+            return false
+        }
+
+        if data.contains(0) {
+            return true
+        }
+
+        let sampleCount = min(data.count, 4096)
+        let sample = data.prefix(sampleCount)
+        let suspiciousByteCount = sample.reduce(into: 0) { count, byte in
+            switch byte {
+            case 0x09, 0x0A, 0x0C, 0x0D:
+                break
+            case 0x20...0x7E, 0x80...0xFF:
+                break
+            default:
+                count += 1
+            }
+        }
+
+        return Double(suspiciousByteCount) / Double(sampleCount) > 0.30
     }
 }

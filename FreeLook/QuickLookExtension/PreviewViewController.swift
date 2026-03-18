@@ -49,7 +49,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     func preparePreviewOfFile(at url: URL) async throws {
         let resourceValues = try url.resourceValues(forKeys: [.contentTypeKey])
         let contentType = resourceValues.contentType
-        let languageIdentifier = UTIMapper.languageIdentifier(for: contentType)
+        let languageIdentifier = UTIMapper.languageIdentifier(for: contentType, fileName: url.lastPathComponent)
 
         do {
             let preview = try FileLoader.loadPreview(for: url)
@@ -63,6 +63,18 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
                     previewAppearanceMode: appearanceSnapshot.previewAppearanceMode,
                     lightTheme: appearanceSnapshot.lightTheme,
                     darkTheme: appearanceSnapshot.darkTheme,
+                    codeFontName: appearanceSnapshot.codeFontName,
+                    codeFontSize: appearanceSnapshot.codeFontSize
+                )
+            }
+        } catch FileLoaderError.binaryContent {
+            let appearanceSnapshot = loadAppearanceSnapshot()
+
+            await MainActor.run {
+                loadPreviewNoticeHTML(
+                    fileName: url.lastPathComponent,
+                    notice: "Binary file. Text preview is unavailable.",
+                    previewAppearanceMode: appearanceSnapshot.previewAppearanceMode,
                     codeFontName: appearanceSnapshot.codeFontName,
                     codeFontSize: appearanceSnapshot.codeFontSize
                 )
@@ -105,7 +117,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         codeFontSize: Int
     ) {
         let truncationNotice = preview.didTruncate
-            ? "<div class=\"preview-notice\">Large file. Showing the first 500 KB.</div>"
+            ? "<div class=\"preview-notice\">Large file. Previewing only the first 500 KB.</div>"
             : ""
         let hasInitialNotice = preview.didTruncate ? "" : " hidden"
         let renderPayload = makeRenderPayloadJSON(
@@ -184,6 +196,32 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
           }
         })();
         </script>
+        """
+
+        let html = renderTemplate(
+            pageTitle: fileName,
+            bodyClass: .preview,
+            bodyAppearance: previewAppearanceToken(for: previewAppearanceMode),
+            bodyStyle: makeBodyStyle(codeFontName: codeFontName, codeFontSize: codeFontSize),
+            notice: "",
+            content: content
+        )
+
+        loadRenderedHTML(html)
+    }
+
+    private func loadPreviewNoticeHTML(
+        fileName: String,
+        notice: String,
+        previewAppearanceMode: String,
+        codeFontName: String,
+        codeFontSize: Int
+    ) {
+        let content = """
+        <div id="preview-notice-stack" class="preview-notice-stack" aria-live="polite">
+          <div class="preview-notice">\(escapeHTML(notice))</div>
+        </div>
+        <div id="preview-root" class="preview-render-root" aria-live="polite"></div>
         """
 
         let html = renderTemplate(

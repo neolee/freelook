@@ -25,6 +25,12 @@ describe("renderer bootstrap", () => {
     expect(normalizeLanguageName("php")).toBe("php");
     expect(normalizeLanguageName("lua")).toBe("lua");
     expect(normalizeLanguageName("scala")).toBe("scala");
+    expect(normalizeLanguageName("yaml")).toBe("yaml");
+    expect(normalizeLanguageName("toml")).toBe("toml");
+    expect(normalizeLanguageName("sql")).toBe("sql");
+    expect(normalizeLanguageName("dockerfile")).toBe("dockerfile");
+    expect(normalizeLanguageName("makefile")).toBe("makefile");
+    expect(normalizeLanguageName("cmake")).toBe("cmake");
     expect(normalizeLanguageName("text")).toBeNull();
     expect(normalizeLanguageName("unknown")).toBeNull();
   });

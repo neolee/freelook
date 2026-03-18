@@ -8,6 +8,12 @@
 import UniformTypeIdentifiers
 
 enum UTIMapper {
+    private static let filenameLanguageMap: [String: String] = [
+        "dockerfile": "dockerfile",
+        "cmakelists.txt": "cmake",
+        "makefile": "makefile",
+        "gnumakefile": "makefile",
+    ]
     private static let markdownTypes = supportedTypes(
         "net.daringfireball.markdown"
     )
@@ -49,6 +55,26 @@ enum UTIMapper {
         "org.scala-lang.scala",
         "net.paradigmx.scala-script"
     )
+    private static let yamlTypes = supportedTypes(
+        "public.yaml",
+        "org.yaml.yaml"
+    )
+    private static let tomlTypes = supportedTypes(
+        "io.toml"
+    )
+    private static let sqlTypes = supportedTypes(
+        "org.iso.sql",
+        "com.sequel-ace.sequel-ace.sql"
+    )
+    private static let dockerfileTypes = supportedTypes(
+        "net.paradigmx.dockerfile"
+    )
+    private static let makefileTypes = supportedTypes(
+        "public.make-source"
+    )
+    private static let cmakeTypes = supportedTypes(
+        "net.paradigmx.cmake-source"
+    )
     private static let clojureTypes = supportedTypes(
         "net.paradigmx.clojure-source",
         "org.cloture.cloture",
@@ -72,8 +98,12 @@ enum UTIMapper {
     private static let sourceCodeType = UTType("public.source-code")
 
     static func languageIdentifier(for contentType: UTType?) -> String {
+        languageIdentifier(for: contentType, fileName: nil)
+    }
+
+    static func languageIdentifier(for contentType: UTType?, fileName: String?) -> String {
         guard let contentType else {
-            return "text"
+            return fallbackLanguageIdentifier(forFileName: fileName)
         }
 
         if matches(contentType, anyOf: markdownTypes) {
@@ -141,6 +171,30 @@ enum UTIMapper {
             return "scala"
         }
 
+        if matches(contentType, anyOf: yamlTypes) {
+            return "yaml"
+        }
+
+        if matches(contentType, anyOf: tomlTypes) {
+            return "toml"
+        }
+
+        if matches(contentType, anyOf: sqlTypes) {
+            return "sql"
+        }
+
+        if matches(contentType, anyOf: dockerfileTypes) {
+            return "dockerfile"
+        }
+
+        if matches(contentType, anyOf: makefileTypes) {
+            return "makefile"
+        }
+
+        if matches(contentType, anyOf: cmakeTypes) {
+            return "cmake"
+        }
+
         if matches(contentType, anyOf: clojureTypes) {
             return "clojure"
         }
@@ -166,10 +220,10 @@ enum UTIMapper {
         }
 
         if matches(contentType, anyOf: [sourceCodeType]) {
-            return "text"
+            return fallbackLanguageIdentifier(forFileName: fileName)
         }
 
-        return "text"
+        return fallbackLanguageIdentifier(forFileName: fileName)
     }
 
     private static func supportedTypes(_ identifiers: String...) -> [UTType] {
@@ -180,5 +234,13 @@ enum UTIMapper {
         types.compactMap { $0 }.contains(where: { candidate in
             contentType == candidate || contentType.conforms(to: candidate)
         })
+    }
+
+    private static func fallbackLanguageIdentifier(forFileName fileName: String?) -> String {
+        guard let fileName else {
+            return "text"
+        }
+
+        return filenameLanguageMap[fileName.lowercased()] ?? "text"
     }
 }

@@ -3,8 +3,10 @@ import MarkdownIt from "markdown-it";
 import { fromHighlighter } from "@shikijs/markdown-it";
 import bashLanguage from "shiki/dist/langs/bash.mjs";
 import clojureLanguage from "shiki/dist/langs/clojure.mjs";
+import cmakeLanguage from "shiki/dist/langs/cmake.mjs";
 import cssLanguage from "shiki/dist/langs/css.mjs";
 import csharpLanguage from "shiki/dist/langs/csharp.mjs";
+import dockerfileLanguage from "shiki/dist/langs/dockerfile.mjs";
 import goLanguage from "shiki/dist/langs/go.mjs";
 import haskellLanguage from "shiki/dist/langs/haskell.mjs";
 import htmlLanguage from "shiki/dist/langs/html.mjs";
@@ -13,14 +15,18 @@ import javascriptLanguage from "shiki/dist/langs/javascript.mjs";
 import jsonLanguage from "shiki/dist/langs/json.mjs";
 import kotlinLanguage from "shiki/dist/langs/kotlin.mjs";
 import luaLanguage from "shiki/dist/langs/lua.mjs";
+import makefileLanguage from "shiki/dist/langs/makefile.mjs";
 import phpLanguage from "shiki/dist/langs/php.mjs";
 import pythonLanguage from "shiki/dist/langs/python.mjs";
 import rustLanguage from "shiki/dist/langs/rust.mjs";
 import rubyLanguage from "shiki/dist/langs/ruby.mjs";
+import sqlLanguage from "shiki/dist/langs/sql.mjs";
 import scalaLanguage from "shiki/dist/langs/scala.mjs";
 import swiftLanguage from "shiki/dist/langs/swift.mjs";
+import tomlLanguage from "shiki/dist/langs/toml.mjs";
 import typescriptLanguage from "shiki/dist/langs/typescript.mjs";
 import xmlLanguage from "shiki/dist/langs/xml.mjs";
+import yamlLanguage from "shiki/dist/langs/yaml.mjs";
 import ayuDarkTheme from "shiki/dist/themes/ayu-dark.mjs";
 import ayuLightTheme from "shiki/dist/themes/ayu-light.mjs";
 import catppuccinLatteTheme from "shiki/dist/themes/catppuccin-latte.mjs";
@@ -67,8 +73,10 @@ const THEME_NAME_MAP = Object.fromEntries(themeManifest.themes.map((theme) => [t
 const SUPPORTED_SOURCE_LANGUAGES = [
   "bash",
   "clojure",
+  "cmake",
   "css",
   "csharp",
+  "dockerfile",
   "go",
   "haskell",
   "html",
@@ -77,21 +85,27 @@ const SUPPORTED_SOURCE_LANGUAGES = [
   "json",
   "kotlin",
   "lua",
+  "makefile",
   "php",
   "python",
   "ruby",
   "rust",
   "scala",
+  "sql",
   "swift",
+  "toml",
   "typescript",
   "xml",
+  "yaml",
 ];
 
 const SOURCE_LANGUAGE_REGISTRATIONS = [
   bashLanguage,
   clojureLanguage,
+  cmakeLanguage,
   cssLanguage,
   csharpLanguage,
+  dockerfileLanguage,
   goLanguage,
   haskellLanguage,
   htmlLanguage,
@@ -100,14 +114,18 @@ const SOURCE_LANGUAGE_REGISTRATIONS = [
   jsonLanguage,
   kotlinLanguage,
   luaLanguage,
+  makefileLanguage,
   phpLanguage,
   pythonLanguage,
   rustLanguage,
   rubyLanguage,
+  sqlLanguage,
   scalaLanguage,
   swiftLanguage,
+  tomlLanguage,
   typescriptLanguage,
   xmlLanguage,
+  yamlLanguage,
 ];
 
 const THEME_REGISTRATIONS = themeManifest.themes.map((theme) => {

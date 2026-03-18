@@ -251,37 +251,111 @@ Practical implication:
 - in those cases the product should prefer a minimal, semantically correct declaration surface over speculative registration experiments, and
 - FreeLook should focus its registration complexity on developer-facing extensions whose semantic path is otherwise missing or degraded, such as `cjs`.
 
+The current product conclusion is:
+
+- `.txt` is not a reliable FreeLook surface on the current machine,
+- FreeLook should continue to handle `public.plain-text` correctly when the system routes it there,
+- but generic plain text is not treated as a guaranteed v1.0 ownership surface.
+
+### Fixed-filename developer files
+
+Fixed-filename developer files such as `Dockerfile` and `CMakeLists.txt` exposed a different limitation:
+
+- product-owned exported UTIs using `public.filename` were successfully registered,
+- the same files still did not reliably resolve to those product-owned identifiers on the current machine,
+- adding `CFBundleDocumentTypes` entries with `CFBundleTypeExtensions = Dockerfile` or `CMakeLists.txt` was not causally useful because those values are filenames, not true extensions.
+
+The first bounded fallback experiment (`public.content` + `public.unix-executable`) was only partially successful:
+
+- `Makefile` was already covered semantically through `public.make-source`,
+- `Dockerfile` still resolved only to `public.data`,
+- `CMakeLists.txt` still resolved to `public.plain-text`.
+
+FreeLook then expanded the bounded fallback surface one step further by also claiming `public.data`, while adding binary detection in `FileLoader` so non-text files produce a notice instead of garbage output.
+
+The current FreeLook baseline for this class is therefore:
+
+- claim `public.content`, `public.unix-executable`, and `public.data` as bounded fallback entry points,
+- detect obvious binary content before rendering,
+- use filename fallback rules in `UTIMapper` for supported fixed-name files such as `Dockerfile`, `CMakeLists.txt`, `Makefile`, and `GNUmakefile`.
+
+This is intentionally a fallback mechanism, not a guarantee that every machine will route those filenames to FreeLook before the system or another provider does.
+
+Validated result on the current machine:
+
+- `Dockerfile` now routes to FreeLook and receives `dockerfile` highlighting through the filename fallback path,
+- `Makefile` routes to FreeLook through `public.make-source`,
+- `CMakeLists.txt` still follows the system plain-text preview path,
+- binary files that enter through `public.data` now show a unified preview notice instead of rendering undecodable bytes.
+
+### EDN follow-up
+
+The EDN situation remains intentionally unresolved on the current machine:
+
+- FreeLook exports `net.paradigmx.edn-document`,
+- the current machine still prefers `com.adobe.edn`,
+- FreeLook intentionally does not claim `com.adobe.edn`,
+- so `.edn` is currently a product-defined semantic path that is ready in the bundle but not yet active on this machine.
+
+This is a deliberate trade-off: keep the product surface semantically clean rather than absorb the Adobe pollution path.
+
 ## FreeLook v1.0 baseline whitelist
 
 The current v1.0 `QLSupportedContentTypes` baseline is:
 
-- `public.source-code`
-- `public.c-source`
-- `public.c-header`
-- `public.objective-c-source`
-- `public.objective-c-plus-plus-source`
-- `public.c-plus-plus-source`
-- `public.swift-source`
-- `public.python-script`
-- `net.paradigmx.commonjs-source`
-- `com.netscape.javascript-source`
-- `public.typescript`
-- `com.microsoft.typescript`
-- `org.typescriptlang.typescript`
-- `public.css`
-- `org.w3.css`
-- `public.html`
-- `public.shell-script`
-- `public.zsh-script`
-- `public.bash-script`
-- `public.ruby-script`
-- `net.daringfireball.markdown`
-- `public.json`
-- `public.xml`
-- `public.plain-text`
 - `com.apple.property-list`
-- `com.apple.xml-property-list`
 - `com.apple.xcode.entitlements-property-list`
+- `com.apple.xml-property-list`
+- `com.microsoft.c-sharp`
+- `com.microsoft.typescript`
+- `com.netscape.javascript-source`
+- `com.sequel-ace.sequel-ace.sql`
+- `com.sun.java-source`
+- `io.toml`
+- `net.daringfireball.markdown`
+- `net.paradigmx.clojure-source`
+- `net.paradigmx.cmake-source`
+- `net.paradigmx.commonjs-source`
+- `net.paradigmx.dockerfile`
+- `net.paradigmx.edn-document`
+- `net.paradigmx.scala-script`
+- `org.clojure.script`
+- `org.cloture.cloture`
+- `org.golang.golang`
+- `org.haskell.haskell`
+- `org.iso.sql`
+- `org.kotlinlang.source`
+- `org.lua.lua`
+- `org.rust-lang.rust`
+- `org.scala-lang.scala`
+- `org.typescriptlang.typescript`
+- `org.w3.css`
+- `org.yaml.yaml`
+- `public.bash-script`
+- `public.c-header`
+- `public.c-plus-plus-source`
+- `public.c-source`
+- `public.content`
+- `public.css`
+- `public.data`
+- `public.html`
+- `public.json`
+- `public.lua-source`
+- `public.make-source`
+- `public.objective-c-plus-plus-source`
+- `public.objective-c-source`
+- `public.php-script`
+- `public.plain-text`
+- `public.python-script`
+- `public.ruby-script`
+- `public.shell-script`
+- `public.source-code`
+- `public.swift-source`
+- `public.typescript`
+- `public.unix-executable`
+- `public.xml`
+- `public.yaml`
+- `public.zsh-script`
 
 This list should be treated as the baseline validation surface for FreeLook v1.0. Future registration work should begin by validating this whitelist against real files and real system `UTType` resolution behavior before expanding it.
 

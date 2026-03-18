@@ -1,0 +1,5 @@
+name: FreeLook
+mode: preview
+themes:
+  - github-dark
+  - one-light

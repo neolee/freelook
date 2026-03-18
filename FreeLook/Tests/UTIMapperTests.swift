@@ -87,6 +87,37 @@ struct UTIMapperTests {
         #expect(UTIMapper.languageIdentifier(for: UTType("dyn.age81g22")) == "text")
     }
 
+    @Test func mapsYAML() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("public.yaml")) == "yaml")
+        #expect(UTIMapper.languageIdentifier(for: UTType("org.yaml.yaml")) == "yaml")
+    }
+
+    @Test func mapsTOML() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("io.toml")) == "toml")
+    }
+
+    @Test func mapsSQL() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("org.iso.sql")) == "sql")
+        #expect(UTIMapper.languageIdentifier(for: UTType("com.sequel-ace.sequel-ace.sql")) == "sql")
+    }
+
+    @Test func mapsDockerfile() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("net.paradigmx.dockerfile")) == "dockerfile")
+        #expect(UTIMapper.languageIdentifier(for: UTType.data) == "text")
+        #expect(UTIMapper.languageIdentifier(for: UTType("public.content"), fileName: "Dockerfile") == "dockerfile")
+    }
+
+    @Test func mapsMakefile() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("public.make-source")) == "makefile")
+        #expect(UTIMapper.languageIdentifier(for: UTType("public.content"), fileName: "Makefile") == "makefile")
+        #expect(UTIMapper.languageIdentifier(for: UTType("public.content"), fileName: "GNUmakefile") == "makefile")
+    }
+
+    @Test func mapsCMake() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("net.paradigmx.cmake-source")) == "cmake")
+        #expect(UTIMapper.languageIdentifier(for: UTType("public.content"), fileName: "CMakeLists.txt") == "cmake")
+    }
+
     @Test func mapsClojure() {
         #expect(UTIMapper.languageIdentifier(for: UTType("net.paradigmx.clojure-source")) == "clojure")
         #expect(UTIMapper.languageIdentifier(for: UTType("org.cloture.cloture")) == "clojure")

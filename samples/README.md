@@ -26,6 +26,14 @@ This directory contains committed sample files for design review, manual Quick L
 - `example.lua` — Lua syntax highlighting sample
 - `Example.scala` — Scala syntax highlighting sample
 - `example.sc` — Scala script syntax highlighting sample
+- `example.yaml` — YAML syntax highlighting sample
+- `example.yml` — alternate YAML extension sample
+- `example.toml` — TOML syntax highlighting sample
+- `example.sql` — SQL syntax highlighting sample
+- `Dockerfile` — Dockerfile syntax highlighting sample
+- `Makefile` — Makefile syntax highlighting sample
+- `CMakeLists.txt` — CMake main file sample
+- `example.cmake` — CMake script syntax highlighting sample
 - `example.py` — Python syntax highlighting sample
 - `example.js` — JavaScript syntax highlighting sample
 - `example.rs` — Rust syntax highlighting sample
