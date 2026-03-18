@@ -44,6 +44,7 @@ The exact support surface is documented in:
 
 - Generic plain-text files such as `.txt` are not a guaranteed FreeLook surface on all systems because the system plain-text Quick Look path often wins.
 - Some files may not route to FreeLook on machines where Launch Services still resolves it to other third-party metadata. It's beyond the scope of FreeLook. But you can [create an issue](https://github.com/neolee/freelook/issues) if you met this kind of issues.
+- Some files may not route to FreeLook on machines where Launch Services still resolves them to third-party metadata. This is beyond the scope of FreeLook, but you can [create an issue](https://github.com/neolee/freelook/issues) if you encounter this kind of issue.
 - FreeLook is intentionally conservative about file-type registration. It prefers a small, semantically correct registration surface over speculative claims.
 
 ## License
