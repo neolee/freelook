@@ -14,11 +14,6 @@ struct UTIMapperTests {
         #expect(UTIMapper.languageIdentifier(for: contentType) == "markdown")
     }
 
-    @Test func mapsAlternateMarkdownUTIs() {
-        #expect(UTIMapper.languageIdentifier(for: UTType("io.typora.markdown")) == "markdown")
-        #expect(UTIMapper.languageIdentifier(for: UTType("net.ia.markdown")) == "markdown")
-    }
-
     @Test func mapsJSON() {
         #expect(UTIMapper.languageIdentifier(for: .json) == "json")
     }

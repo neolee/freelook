@@ -9,9 +9,7 @@ import UniformTypeIdentifiers
 
 enum UTIMapper {
     private static let markdownTypes = supportedTypes(
-        "net.daringfireball.markdown",
-        "io.typora.markdown",
-        "net.ia.markdown"
+        "net.daringfireball.markdown"
     )
     private static let javaScriptTypes = supportedTypes(
         "net.paradigmx.commonjs-source",

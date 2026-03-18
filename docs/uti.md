@@ -19,9 +19,8 @@ In practice, the difficult part is often not the Quick Look extension itself but
 ### Markdown routing baseline
 
 - FreeLook currently declares `net.daringfireball.markdown` in `QLSupportedContentTypes`.
-- FreeLook currently keeps the Markdown imported declaration in `QuickLookExtension/Info.plist`.
-- The current extension-level imported declaration gives `md`, `markdown`, and `text/markdown` an explicit local path to `net.daringfireball.markdown`.
 - On a clean-enough system state, both `.md` and `.markdown` can resolve to `net.daringfireball.markdown`, and default Quick Look will route Markdown files to `net.paradigmx.FreeLook.QuickLookExtension`.
+- Local follow-up cleanup showed that the previously added Markdown imported declarations were not required on the current machine once the surrounding LaunchServices state was healthy. Keep that declaration surface minimal unless a specific machine demonstrates that the semantic Markdown type is otherwise missing.
 
 ### Post-reboot cleanup status
 
@@ -54,7 +53,7 @@ Important implication:
 
 The local experiments support the following model:
 
-1. Bundles register document types and UTIs through `CFBundleDocumentTypes`, `UTExportedTypeDeclarations`, and `UTImportedTypeDeclarations`.
+1. Bundles register document types and UTIs through `CFBundleDocumentTypes`, `UTExportedTypeDeclarations`, and `UTImportedTypeDeclarations` when needed.
 2. LaunchServices builds a candidate set of `UTType`s for a tag such as the filename extension `md`.
 3. The system picks a preferred type for that tag.
 4. Finder kind strings and `URLResourceValues.contentTypeKey` follow that preferred type.
@@ -65,9 +64,10 @@ Apple documents the existence of the candidate set and the preferred type, but t
 ## Practical rules for FreeLook
 
 - Treat `QLSupportedContentTypes` as the final "can this extension preview this resolved type?" gate.
-- Keep all file-type registration declarations in `QuickLookExtension/Info.plist`, including `CFBundleDocumentTypes`, `UTImportedTypeDeclarations`, `UTExportedTypeDeclarations`, and `QLSupportedContentTypes`.
+- Keep file-type registration declarations in `QuickLookExtension/Info.plist`.
 - The current validated baseline is that the tested Markdown and CommonJS declarations work from `QuickLookExtension/Info.plist` alone and do not require matching file-type declarations in the host app `Info.plist`.
 - Treat `UTImportedTypeDeclarations` and `UTExportedTypeDeclarations` as inputs into system type resolution, not as direct Quick Look routing controls.
+- Use `CFBundleDocumentTypes`, `UTImportedTypeDeclarations`, and `UTExportedTypeDeclarations` only when they create a concrete semantic entry point the system otherwise lacks. Do not add them speculatively just to increase apparent coverage.
 - Validate both the preferred type and the provider actually selected by Quick Look.
 - When a routing failure appears, do not assume the extension declaration is wrong before checking for third-party LaunchServices pollution.
 - Prefer exact, well-known `UTType` identifiers over broad parent types.
@@ -84,7 +84,7 @@ The current best strategy for FreeLook is:
 3. For each important file extension, inspect the preferred `UTType` and the candidate set observed on a real machine.
 4. If the system resolves that extension to one of FreeLook's claimed, semantically valid `UTType`s, FreeLook will usually be launched as long as no stronger competing Quick Look provider takes precedence.
 5. If coverage is missing and the extension falls back to an opaque `dyn.*` identifier, prefer exporting a product-owned UTI and claiming that exact type instead of trying to absorb the extension into an unrelated global type.
-6. If coverage is missing for other reasons, add more semantically valid `UTType`s, not polluted fallback identifiers.
+6. If coverage is missing for other reasons, add more semantically valid `UTType`s, not polluted fallback identifiers, and prefer the smallest declaration change that can be causally validated.
 7. If a candidate type is low-quality, machine-specific, or obviously wrong for the file format, document it as rejected instead of claiming it.
 
 This is intentionally a probability-maximizing strategy, not a guarantee. Apple does not document the full provider tie-break algorithm, and other installed Quick Look extensions may still win for some types.
@@ -102,7 +102,6 @@ The first audit of the v1.0 whitelist on the current machine led to three kinds 
 - TypeScript: `public.typescript`, `com.microsoft.typescript`, `org.typescriptlang.typescript`
 - Shell subtypes: `public.zsh-script`, `public.bash-script`
 - CSS: `org.w3.css`
-- Markdown: `io.typora.markdown`, `net.ia.markdown`
 - Common C-family source types: `public.c-source`, `public.c-header`, `public.objective-c-source`, `public.objective-c-plus-plus-source`, `public.c-plus-plus-source`
 - Product-owned CommonJS type: `net.paradigmx.commonjs-source`
 
@@ -181,6 +180,21 @@ After restoring the product-owned CommonJS declaration in `QuickLookExtension/In
 
 This rules out the simplest "the result only survived because of stale LaunchServices cache" explanation. On the current machine, the CommonJS declaration is causally responsible for the observed routing change.
 
+### Plain text follow-up
+
+Generic plain text turned out to be a good example of the platform limits:
+
+- the current machine resolves `.txt` to `public.plain-text`,
+- the candidate set also includes third-party types such as `io.typora.plain-text` and `com.symantec.more.text`,
+- adding a product-owned exported UTI for `txt` successfully inserted that type into the candidate set, but
+- the preferred type for `.txt` still remained `public.plain-text`, and Finder still chose the system preview path rather than FreeLook.
+
+Practical implication:
+
+- if another app or the system already has a strong preview path for a generic type such as `public.plain-text`, FreeLook may not be able to take over predictably,
+- in those cases the product should prefer a minimal, semantically correct declaration surface over speculative registration experiments, and
+- FreeLook should focus its registration complexity on developer-facing extensions whose semantic path is otherwise missing or degraded, such as `cjs`.
+
 ## FreeLook v1.0 baseline whitelist
 
 The current v1.0 `QLSupportedContentTypes` baseline is:
@@ -206,8 +220,6 @@ The current v1.0 `QLSupportedContentTypes` baseline is:
 - `public.bash-script`
 - `public.ruby-script`
 - `net.daringfireball.markdown`
-- `io.typora.markdown`
-- `net.ia.markdown`
 - `public.json`
 - `public.xml`
 - `public.plain-text`

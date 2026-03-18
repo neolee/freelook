@@ -238,7 +238,7 @@ The extension's current `QLSupportedContentTypes` list is the FreeLook v1.0 base
 
 Do not assume that a parent type such as `public.source-code` is sufficient to reliably claim all descendant source-file types. The registration strategy is to cover the semantically valid `UTType` candidates that important extensions resolve to on real systems, while avoiding polluted or low-quality identifiers that happen to appear in LaunchServices. This must still be established by explicit Quick Look experiments and should be documented with representative findings for Swift, Markdown, JSON, XML, and at least one additional source-code subtype.
 
-Keep all file-type registration declarations in `QuickLookExtension/Info.plist`, including `CFBundleDocumentTypes`, `UTImportedTypeDeclarations`, `UTExportedTypeDeclarations`, and `QLSupportedContentTypes`. The current validated baseline does not require matching file-type declarations in the host app `Info.plist`.
+Keep file-type registration declarations in `QuickLookExtension/Info.plist`, but keep the surface minimal. `CFBundleDocumentTypes`, `UTImportedTypeDeclarations`, and `UTExportedTypeDeclarations` should be added only when they introduce a concrete semantic entry point the system would otherwise miss, not as speculative coverage. The validated baseline does not require matching file-type declarations in the host app `Info.plist`.
 
 When an important developer-facing extension falls back to an opaque `dyn.*` identifier, prefer testing a product-owned exported UTI that conforms to the relevant semantic parent type and is claimed directly in `QLSupportedContentTypes`.
 
@@ -283,13 +283,20 @@ FreeLook needs both unit-test confidence and early visible results. The plan sho
 
 ## Auto-Update (Sparkle)
 
-FreeLook uses the [Sparkle](https://sparkle-project.org) framework for automatic updates. The CI release workflow runs `generate_appcast` to update `appcast.xml` in the repository root after each release. The host app checks the appcast URL on launch and notifies the user when an update is available.
+Sparkle is the planned release/update path, but the integration is not complete yet.
 
-Required setup:
+Current state:
+
+- the Xcode project already references the Sparkle package,
+- the release workflow skeleton already exists in `.github/workflows/release.yml`,
+- updater wiring, release metadata, and release assets are still pending.
+
+Remaining setup for the release phase:
 
 1. Generate an EdDSA key pair with Sparkle's `generate_keys` tool; store the private key as the `SPARKLE_PRIVATE_KEY` GitHub Secret (base64-encoded).
 2. Add the corresponding public key to `Info.plist` as `SUPublicEDKey`.
-3. Set `SUFeedURL` in `Info.plist` to `https://raw.githubusercontent.com/neolee/freelook/main/appcast.xml`
+3. Set `SUFeedURL` in `Info.plist`.
+4. Add the missing release assets such as `exportOptions.plist` and `appcast.xml`.
 
 ---
 
@@ -328,8 +335,6 @@ Required setup:
 │   │   └── renderer.js
 │   ├── package.json
 │   └── esbuild.config.mjs
-├── exportOptions.plist                Developer ID export config for CI
-├── appcast.xml                        Sparkle update feed (updated by CI)
 ├── docs/
 │   ├── plan.md
 │   └── uti.md
@@ -395,11 +400,15 @@ Status: completed.
 - On parse failure, display the original source instead of an empty or broken preview, and add a clear but restrained warning.
 - Verification gate: clean native build; full unit test suite; user manually reviews both valid and invalid JSON behavior.
 
+Status: completed.
+
 3.4 XML rendering
 - Implement `xml-formatter` → `Shiki` `xml`.
 - Treat macOS-native XML-derived developer files such as `.plist` and entitlement documents as part of this XML rendering surface, not as a separate renderer path.
 - On parse failure, display the original source instead of an empty or broken preview, and add a clear but restrained warning.
 - Verification gate: clean native build; full unit test suite; user manually reviews both valid and invalid XML behavior.
+
+Status: completed.
 
 ### Phase 4 — Host App Preferences
 
@@ -431,11 +440,15 @@ Status: not started. The dedicated host-app preview panel remains optional and i
 - Test representative file types to confirm the extension is triggered reliably and record any system-owned fallbacks or tie-break behaviors.
 - Verification gate: clean build; full unit test suite; user manually confirms file association behavior.
 
+Status: partially completed. The current registration baseline is stable for the initial format set, but the 1.0 language support matrix still needs one more pass as new languages are added.
+
 5.2 Error and fallback states
 - Refine explicit UI states for unreadable encoding, oversized files, and renderer parse warnings.
 - Ensure these states match the approved visual system rather than looking like ad hoc debug output.
 - Keep them as transient content-adjacent notices rather than turning them into permanent structural chrome.
 - Verification gate: clean build; full unit test suite; user manually validates the fallback states.
+
+Status: completed.
 
 5.3 Reading comfort refinements
 - Revisit font size, line height, padding, code-block density, and any approved reading controls after the main format pipelines are already stable.
@@ -443,10 +456,14 @@ Status: not started. The dedicated host-app preview panel remains optional and i
 - Any future full-path bar or copy-path affordance should be evaluated here as an optional utility layer, not as required default UI.
 - Verification gate: clean build; full unit test suite; user reviews readability before additional polish is added.
 
+Status: mostly completed for the initial code, Markdown, JSON, and XML surfaces.
+
 5.4 Product polish assets
 - Deliver the remaining product-facing assets such as the About window and bundled open-source license list.
 - `AppIcon` can be completed independently once the asset catalog is stable; it does not need to block the runtime implementation path.
 - Verification gate: clean build; full unit test suite; user signs off on the product polish set.
+
+Status: partially completed. `AppIcon` is done; About/license assets remain optional follow-up work.
 
 ### Phase 6 — Release
 
@@ -454,20 +471,30 @@ Status: not started. The dedicated host-app preview panel remains optional and i
 - Add Sparkle to the `FreeLook` target and wire the host app updater setup.
 - Verification gate: clean build; full unit test suite; user confirms updater integration scope before release configuration.
 
+Status: not started. The package reference exists, but updater wiring has not been implemented yet.
+
 6.2 Export configuration
 - Create `exportOptions.plist` for Developer ID export.
 - Verification gate: clean build; full unit test suite; user reviews export settings.
+
+Status: not started.
 
 6.3 Signing metadata
 - Generate the Sparkle EdDSA key pair, add the public key to `Info.plist`, store the private key in GitHub Secrets, and set `SUFeedURL`.
 - Verification gate: clean build; full unit test suite; user confirms release metadata values before CI changes are relied on.
 
+Status: not started.
+
 6.4 CI release validation
 - Verify the GitHub Actions workflow end to end: archive, export, notarize, staple, DMG, appcast update, and GitHub Release creation.
 - Verification gate: clean build; full unit test suite; user confirms the release pipeline behavior.
 
+Status: not started. The repository contains an initial `release.yml`, but it still assumes missing assets and unimplemented updater metadata.
+
 6.5 End-user installation docs
 - Write `README.md` installation instructions, including the first-launch Gatekeeper bypass flow.
 - Verification gate: clean build; full unit test suite; user reviews the release documentation before the first public release.
+
+Status: not started.
 
 ---
