@@ -134,6 +134,37 @@ describe("renderer bootstrap", () => {
     expect(notice).toBe("Invalid JSON. Showing the original source.");
   });
 
+  test("renders prettified XML with Shiki highlighting", async () => {
+    const result = await renderPreview({
+      content: "<root><item key=\"value\">text</item><empty /></root>",
+      lang: "xml",
+      lightTheme: "GitHub Light",
+      darkTheme: "GitHub Dark",
+    });
+    const { html, notice } = result;
+
+    expect(html).toContain("class=\"shiki");
+    expect(html).toContain("&#x3C;");
+    expect(html).toContain(">root<");
+    expect(html).toContain(">item<");
+    expect(html).toContain(">empty<");
+    expect(notice).toBeNull();
+  });
+
+  test("falls back to raw source with a warning for invalid XML", async () => {
+    const result = await renderPreview({
+      content: "<root><item></root",
+      lang: "xml",
+      lightTheme: "GitHub Light",
+      darkTheme: "GitHub Dark",
+    });
+    const { html, notice } = result;
+
+    expect(html).toContain("freelook-plain");
+    expect(html).toContain("&lt;root&gt;&lt;item&gt;&lt;/root");
+    expect(notice).toBe("Invalid XML. Showing the original source.");
+  });
+
   test("installs the FreeLook global API", async () => {
     const target = {};
     const api = installRenderer(target);

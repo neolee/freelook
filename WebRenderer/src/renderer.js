@@ -10,6 +10,7 @@ import pythonLanguage from "shiki/dist/langs/python.mjs";
 import rubyLanguage from "shiki/dist/langs/ruby.mjs";
 import swiftLanguage from "shiki/dist/langs/swift.mjs";
 import typescriptLanguage from "shiki/dist/langs/typescript.mjs";
+import xmlLanguage from "shiki/dist/langs/xml.mjs";
 import ayuDarkTheme from "shiki/dist/themes/ayu-dark.mjs";
 import ayuLightTheme from "shiki/dist/themes/ayu-light.mjs";
 import catppuccinLatteTheme from "shiki/dist/themes/catppuccin-latte.mjs";
@@ -23,6 +24,7 @@ import oneDarkProTheme from "shiki/dist/themes/one-dark-pro.mjs";
 import oneLightTheme from "shiki/dist/themes/one-light.mjs";
 import { createOnigurumaEngine } from "shiki/engine/oniguruma";
 import onigWasm from "shiki/wasm";
+import xmlFormat from "xml-formatter";
 import themeManifest from "../../FreeLook/QuickLookExtension/Resources/Themes.json";
 
 const HTML_ESCAPE_MAP = {
@@ -52,7 +54,7 @@ const THEME_MODULE_MAP = {
 
 const THEME_NAME_MAP = Object.fromEntries(themeManifest.themes.map((theme) => [theme.displayName, theme.id]));
 
-const SUPPORTED_SOURCE_LANGUAGES = ["bash", "css", "html", "javascript", "json", "python", "ruby", "swift", "typescript"];
+const SUPPORTED_SOURCE_LANGUAGES = ["bash", "css", "html", "javascript", "json", "python", "ruby", "swift", "typescript", "xml"];
 
 const SOURCE_LANGUAGE_REGISTRATIONS = [
   bashLanguage,
@@ -64,6 +66,7 @@ const SOURCE_LANGUAGE_REGISTRATIONS = [
   rubyLanguage,
   swiftLanguage,
   typescriptLanguage,
+  xmlLanguage,
 ];
 
 const THEME_REGISTRATIONS = themeManifest.themes.map((theme) => {
@@ -101,6 +104,10 @@ function isMarkdownLanguage(languageName) {
 
 function isJSONLanguage(languageName) {
   return languageName === "json";
+}
+
+function isXMLLanguage(languageName) {
+  return languageName === "xml";
 }
 
 function getHighlighter() {
@@ -219,6 +226,15 @@ function formatJSONDocument(content) {
   return `${JSON.stringify(JSON.parse(content), null, 2)}\n`;
 }
 
+function formatXMLDocument(content) {
+  return `${xmlFormat(content, {
+    indentation: "  ",
+    lineSeparator: "\n",
+    collapseContent: true,
+    throwOnFailure: true,
+  })}\n`;
+}
+
 function resolveThemeSurface(themeId) {
   const theme = THEME_MODULE_MAP[themeId];
   const colors = theme?.colors ?? {};
@@ -295,6 +311,23 @@ export async function renderPreview({
         lightTheme,
         darkTheme,
         notice: "Invalid JSON. Showing the original source.",
+      });
+    }
+  }
+
+  if (isXMLLanguage(lang)) {
+    try {
+      return makeRenderResult({
+        html: await renderHighlightedSource(formatXMLDocument(content), "xml", lightTheme, darkTheme),
+        lightTheme,
+        darkTheme,
+      });
+    } catch {
+      return makeRenderResult({
+        html: renderPlainText(content, lang),
+        lightTheme,
+        darkTheme,
+        notice: "Invalid XML. Showing the original source.",
       });
     }
   }

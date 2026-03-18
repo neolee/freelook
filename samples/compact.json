@@ -1,0 +1,1 @@
+{"app":"FreeLook","kind":"quick-look-extension","features":["markdown","json","xml","syntax-highlighting"],"preferences":{"lightTheme":"GitHub Light","darkTheme":"GitHub Dark","codeFont":"SF Mono","codeFontSize":14},"samples":[{"name":"markdown_showcase.md","type":"markdown"},{"name":"compact.json","type":"json"},{"name":"compact.xml","type":"xml"}]}

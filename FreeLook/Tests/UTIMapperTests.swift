@@ -27,6 +27,12 @@ struct UTIMapperTests {
         #expect(UTIMapper.languageIdentifier(for: .xml) == "xml")
     }
 
+    @Test func mapsPropertyListsAndEntitlementsToXML() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("com.apple.property-list")) == "xml")
+        #expect(UTIMapper.languageIdentifier(for: UTType("com.apple.xml-property-list")) == "xml")
+        #expect(UTIMapper.languageIdentifier(for: UTType("com.apple.xcode.entitlements-property-list")) == "xml")
+    }
+
     @Test func mapsSwift() {
         let contentType = UTType("public.swift-source")
         #expect(UTIMapper.languageIdentifier(for: contentType) == "swift")
@@ -70,6 +76,7 @@ struct UTIMapperTests {
     @Test func mapsUnknownTypesToText() {
         let contentType = UTType.jpeg
         #expect(UTIMapper.languageIdentifier(for: contentType) == "text")
+        #expect(UTIMapper.languageIdentifier(for: .plainText) == "text")
         #expect(UTIMapper.languageIdentifier(for: nil) == "text")
     }
 }

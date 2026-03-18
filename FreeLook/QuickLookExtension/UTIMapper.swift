@@ -31,6 +31,9 @@ enum UTIMapper {
     private static let shellScriptType = UTType("public.shell-script")
     private static let rubyScriptType = UTType("public.ruby-script")
     private static let htmlType = UTType("public.html")
+    private static let propertyListType = UTType("com.apple.property-list")
+    private static let xmlPropertyListType = UTType("com.apple.xml-property-list")
+    private static let entitlementsPropertyListType = UTType("com.apple.xcode.entitlements-property-list")
     private static let sourceCodeType = UTType("public.source-code")
 
     static func languageIdentifier(for contentType: UTType?) -> String {
@@ -46,7 +49,8 @@ enum UTIMapper {
             return "json"
         }
 
-        if contentType.conforms(to: .xml) {
+        if contentType.conforms(to: .xml)
+            || matches(contentType, anyOf: [propertyListType, xmlPropertyListType, entitlementsPropertyListType]) {
             return "xml"
         }
 

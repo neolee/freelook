@@ -1,9 +1,430 @@
 (() => {
+  var __create = Object.create;
   var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getProtoOf = Object.getPrototypeOf;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __commonJS = (cb, mod) => function __require() {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  };
   var __export = (target, all2) => {
     for (var name in all2)
       __defProp(target, name, { get: all2[name], enumerable: true });
   };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key2 of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key2) && key2 !== except)
+          __defProp(to, key2, { get: () => from[key2], enumerable: !(desc = __getOwnPropDesc(from, key2)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+    // If the importer is in node compatibility mode or this is not an ESM
+    // file that has been converted to a CommonJS file using a Babel-
+    // compatible transform (i.e. "__esModule" has not been set), then set
+    // "default" to the CommonJS "module.exports" for node compatibility.
+    isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+    mod
+  ));
+
+  // node_modules/xml-parser-xo/dist/cjs/index.js
+  var require_cjs = __commonJS({
+    "node_modules/xml-parser-xo/dist/cjs/index.js"(exports, module) {
+      "use strict";
+      Object.defineProperty(exports, "__esModule", { value: true });
+      exports.ParsingError = void 0;
+      var ParsingError = class extends Error {
+        constructor(message, cause) {
+          super(message);
+          this.cause = cause;
+        }
+      };
+      exports.ParsingError = ParsingError;
+      var parsingState;
+      function nextChild() {
+        return element2(false) || text3() || comment3() || cdata2() || processingInstruction();
+      }
+      function nextRootChild() {
+        match2(/\s*/);
+        return element2(true) || comment3() || doctype2() || processingInstruction();
+      }
+      function parseDocument() {
+        const declaration2 = processingInstruction();
+        const children = [];
+        let documentRootNode;
+        let child = nextRootChild();
+        while (child) {
+          if (child.node.type === "Element") {
+            if (documentRootNode) {
+              throw new Error("Found multiple root nodes");
+            }
+            documentRootNode = child.node;
+          }
+          if (!child.excluded) {
+            children.push(child.node);
+          }
+          child = nextRootChild();
+        }
+        if (!documentRootNode) {
+          throw new ParsingError("Failed to parse XML", "Root Element not found");
+        }
+        if (parsingState.xml.length !== 0) {
+          throw new ParsingError("Failed to parse XML", "Not Well-Formed XML");
+        }
+        return {
+          declaration: declaration2 ? declaration2.node : null,
+          root: documentRootNode,
+          children
+        };
+      }
+      function processingInstruction() {
+        const m = match2(/^<\?([\w-:.]+)\s*/);
+        if (!m)
+          return;
+        const node = {
+          name: m[1],
+          type: "ProcessingInstruction",
+          content: ""
+        };
+        const endMarkerIndex = parsingState.xml.indexOf("?>");
+        if (endMarkerIndex > -1) {
+          node.content = parsingState.xml.substring(0, endMarkerIndex).trim();
+          parsingState.xml = parsingState.xml.slice(endMarkerIndex);
+        } else {
+          throw new ParsingError("Failed to parse XML", "ProcessingInstruction closing tag not found");
+        }
+        match2(/\?>/);
+        return {
+          excluded: parsingState.options.filter(node) === false,
+          node
+        };
+      }
+      function element2(matchRoot) {
+        const m = match2(/^<([^?!</>\s]+)\s*/);
+        if (!m)
+          return;
+        const node = {
+          type: "Element",
+          name: m[1],
+          attributes: {},
+          children: []
+        };
+        const excluded = matchRoot ? false : parsingState.options.filter(node) === false;
+        while (!(eos() || is(">") || is("?>") || is("/>"))) {
+          const attr = attribute2();
+          if (attr) {
+            node.attributes[attr.name] = attr.value;
+          } else {
+            return;
+          }
+        }
+        if (match2(/^\s*\/>/)) {
+          node.children = null;
+          return {
+            excluded,
+            node
+          };
+        }
+        match2(/\??>/);
+        let child = nextChild();
+        while (child) {
+          if (!child.excluded) {
+            node.children.push(child.node);
+          }
+          child = nextChild();
+        }
+        if (parsingState.options.strictMode) {
+          const closingTag = `</${node.name}>`;
+          if (parsingState.xml.startsWith(closingTag)) {
+            parsingState.xml = parsingState.xml.slice(closingTag.length);
+          } else {
+            throw new ParsingError("Failed to parse XML", `Closing tag not matching "${closingTag}"`);
+          }
+        } else {
+          match2(/^<\/[\w-:.\u00C0-\u00FF]+\s*>/);
+        }
+        return {
+          excluded,
+          node
+        };
+      }
+      function doctype2() {
+        const m = match2(/^<!DOCTYPE\s+\S+\s+SYSTEM[^>]*>/) || match2(/^<!DOCTYPE\s+\S+\s+PUBLIC[^>]*>/) || match2(/^<!DOCTYPE\s+\S+\s*\[[^\]]*]>/) || match2(/^<!DOCTYPE\s+\S+\s*>/);
+        if (m) {
+          const node = {
+            type: "DocumentType",
+            content: m[0]
+          };
+          return {
+            excluded: parsingState.options.filter(node) === false,
+            node
+          };
+        }
+      }
+      function cdata2() {
+        if (parsingState.xml.startsWith("<![CDATA[")) {
+          const endPositionStart = parsingState.xml.indexOf("]]>");
+          if (endPositionStart > -1) {
+            const endPositionFinish = endPositionStart + 3;
+            const node = {
+              type: "CDATA",
+              content: parsingState.xml.substring(0, endPositionFinish)
+            };
+            parsingState.xml = parsingState.xml.slice(endPositionFinish);
+            return {
+              excluded: parsingState.options.filter(node) === false,
+              node
+            };
+          }
+        }
+      }
+      function comment3() {
+        const m = match2(/^<!--[\s\S]*?-->/);
+        if (m) {
+          const node = {
+            type: "Comment",
+            content: m[0]
+          };
+          return {
+            excluded: parsingState.options.filter(node) === false,
+            node
+          };
+        }
+      }
+      function text3() {
+        const m = match2(/^([^<]+)/);
+        if (m) {
+          const node = {
+            type: "Text",
+            content: m[1]
+          };
+          return {
+            excluded: parsingState.options.filter(node) === false,
+            node
+          };
+        }
+      }
+      function attribute2() {
+        const m = match2(/([^=]+)\s*=\s*("[^"]*"|'[^']*'|[^>\s]+)\s*/);
+        if (m) {
+          return {
+            name: m[1].trim(),
+            value: stripQuotes(m[2].trim())
+          };
+        }
+      }
+      function stripQuotes(val) {
+        return val.replace(/^['"]|['"]$/g, "");
+      }
+      function match2(re2) {
+        const m = parsingState.xml.match(re2);
+        if (m) {
+          parsingState.xml = parsingState.xml.slice(m[0].length);
+          return m;
+        }
+      }
+      function eos() {
+        return 0 === parsingState.xml.length;
+      }
+      function is(prefix) {
+        return 0 === parsingState.xml.indexOf(prefix);
+      }
+      function parseXml(xml2, options = {}) {
+        xml2 = xml2.trim();
+        const filter = options.filter || (() => true);
+        parsingState = {
+          xml: xml2,
+          options: Object.assign(Object.assign({}, options), { filter, strictMode: options.strictMode === true })
+        };
+        return parseDocument();
+      }
+      if (typeof module !== "undefined" && typeof exports === "object") {
+        module.exports = parseXml;
+      }
+      exports.default = parseXml;
+    }
+  });
+
+  // node_modules/xml-formatter/dist/cjs/index.js
+  var require_cjs2 = __commonJS({
+    "node_modules/xml-formatter/dist/cjs/index.js"(exports, module) {
+      "use strict";
+      var __importDefault = exports && exports.__importDefault || function(mod) {
+        return mod && mod.__esModule ? mod : { "default": mod };
+      };
+      Object.defineProperty(exports, "__esModule", { value: true });
+      var xml_parser_xo_1 = __importDefault(require_cjs());
+      function newLine(state) {
+        if (!state.options.indentation && !state.options.lineSeparator)
+          return;
+        state.content += state.options.lineSeparator;
+        let i;
+        for (i = 0; i < state.level; i++) {
+          state.content += state.options.indentation;
+        }
+      }
+      function indent(state) {
+        state.content = state.content.replace(/ +$/, "");
+        let i;
+        for (i = 0; i < state.level; i++) {
+          state.content += state.options.indentation;
+        }
+      }
+      function appendContent(state, content) {
+        state.content += content;
+      }
+      function processNode(node, state, preserveSpace) {
+        if (node.type === "Element") {
+          processElementNode(node, state, preserveSpace);
+        } else if (node.type === "ProcessingInstruction") {
+          processProcessingIntruction(node, state);
+        } else if (typeof node.content === "string") {
+          processContent(node.content, state, preserveSpace);
+        } else {
+          throw new Error("Unknown node type: " + node.type);
+        }
+      }
+      function processContent(content, state, preserveSpace) {
+        if (!preserveSpace) {
+          const trimmedContent = content.trim();
+          if (state.options.lineSeparator) {
+            content = trimmedContent;
+          } else if (trimmedContent.length === 0) {
+            content = trimmedContent;
+          }
+        }
+        if (content.length > 0) {
+          if (!preserveSpace && state.content.length > 0) {
+            newLine(state);
+          }
+          appendContent(state, content);
+        }
+      }
+      function isPathMatchingIgnoredPaths(path, ignoredPaths) {
+        const fullPath = "/" + path.join("/");
+        const pathLastPart = path[path.length - 1];
+        return ignoredPaths.includes(pathLastPart) || ignoredPaths.includes(fullPath);
+      }
+      function processElementNode(node, state, preserveSpace) {
+        state.path.push(node.name);
+        if (!preserveSpace && state.content.length > 0) {
+          newLine(state);
+        }
+        appendContent(state, "<" + node.name);
+        processAttributes(state, node.attributes);
+        if (node.children === null || state.options.forceSelfClosingEmptyTag && node.children.length === 0) {
+          const selfClosingNodeClosingTag = state.options.whiteSpaceAtEndOfSelfclosingTag ? " />" : "/>";
+          appendContent(state, selfClosingNodeClosingTag);
+        } else if (node.children.length === 0) {
+          appendContent(state, "></" + node.name + ">");
+        } else {
+          const nodeChildren = node.children;
+          appendContent(state, ">");
+          state.level++;
+          let nodePreserveSpace = node.attributes["xml:space"] === "preserve" || preserveSpace;
+          let ignoredPath = false;
+          if (!nodePreserveSpace && state.options.ignoredPaths) {
+            ignoredPath = isPathMatchingIgnoredPaths(state.path, state.options.ignoredPaths);
+            nodePreserveSpace = ignoredPath;
+          }
+          if (!nodePreserveSpace && state.options.collapseContent) {
+            let containsTextNodes = false;
+            let containsTextNodesWithLineBreaks = false;
+            let containsNonTextNodes = false;
+            nodeChildren.forEach(function(child, index) {
+              if (child.type === "Text") {
+                if (child.content.includes("\n")) {
+                  containsTextNodesWithLineBreaks = true;
+                  child.content = child.content.trim();
+                } else if ((index === 0 || index === nodeChildren.length - 1) && !preserveSpace) {
+                  if (child.content.trim().length === 0) {
+                    child.content = "";
+                  }
+                }
+                if (child.content.trim().length > 0 || nodeChildren.length === 1) {
+                  containsTextNodes = true;
+                }
+              } else if (child.type === "CDATA") {
+                containsTextNodes = true;
+              } else {
+                containsNonTextNodes = true;
+              }
+            });
+            if (containsTextNodes && (!containsNonTextNodes || !containsTextNodesWithLineBreaks)) {
+              nodePreserveSpace = true;
+            }
+          }
+          nodeChildren.forEach(function(child) {
+            processNode(child, state, preserveSpace || nodePreserveSpace);
+          });
+          state.level--;
+          if (!preserveSpace && !nodePreserveSpace) {
+            newLine(state);
+          }
+          if (ignoredPath) {
+            indent(state);
+          }
+          appendContent(state, "</" + node.name + ">");
+        }
+        state.path.pop();
+      }
+      function processAttributes(state, attributes) {
+        Object.keys(attributes).forEach(function(attr) {
+          if (state.options.attributeQuotes === "single") {
+            const escaped = attributes[attr].replace(/'/g, "&apos;");
+            appendContent(state, " " + attr + "='" + escaped + "'");
+          } else {
+            const escaped = attributes[attr].replace(/"/g, "&quot;");
+            appendContent(state, " " + attr + '="' + escaped + '"');
+          }
+        });
+      }
+      function processProcessingIntruction(node, state) {
+        if (state.content.length > 0) {
+          newLine(state);
+        }
+        appendContent(state, "<?" + node.name);
+        appendContent(state, " " + node.content.trim());
+        appendContent(state, "?>");
+      }
+      function formatXml(xml2, options = {}) {
+        options.indentation = "indentation" in options ? options.indentation : "    ";
+        options.collapseContent = options.collapseContent === true;
+        options.lineSeparator = "lineSeparator" in options ? options.lineSeparator : "\r\n";
+        options.whiteSpaceAtEndOfSelfclosingTag = options.whiteSpaceAtEndOfSelfclosingTag === true;
+        options.throwOnFailure = options.throwOnFailure !== false;
+        options.attributeQuotes = "attributeQuotes" in options ? options.attributeQuotes : "double";
+        try {
+          const parsedXml = (0, xml_parser_xo_1.default)(xml2, { filter: options.filter, strictMode: options.strictMode });
+          const state = { content: "", level: 0, options, path: [] };
+          if (parsedXml.declaration) {
+            processProcessingIntruction(parsedXml.declaration, state);
+          }
+          parsedXml.children.forEach(function(child) {
+            processNode(child, state, false);
+          });
+          if (!options.lineSeparator) {
+            return state.content;
+          }
+          return state.content.replace(/\r\n/g, "\n").replace(/\n/g, options.lineSeparator);
+        } catch (err) {
+          if (options.throwOnFailure) {
+            throw err;
+          }
+          return xml2;
+        }
+      }
+      formatXml.minify = (xml2, options = {}) => {
+        return formatXml(xml2, Object.assign(Object.assign({}, options), { indentation: "", lineSeparator: "" }));
+      };
+      if (typeof module !== "undefined" && typeof exports === "object") {
+        module.exports = formatXml;
+      }
+      exports.default = formatXml;
+    }
+  });
 
   // node_modules/@shikijs/types/dist/index.mjs
   var ShikiError = class extends Error {
@@ -13130,6 +13551,9 @@
     return WebAssembly.instantiate(wasmBinary, info).then((wasm) => wasm.instance.exports);
   };
 
+  // src/renderer.js
+  var import_xml_formatter = __toESM(require_cjs2(), 1);
+
   // ../FreeLook/QuickLookExtension/Resources/Themes.json
   var Themes_default = {
     defaults: {
@@ -13219,7 +13643,7 @@
     nord: nord_default
   };
   var THEME_NAME_MAP = Object.fromEntries(Themes_default.themes.map((theme) => [theme.displayName, theme.id]));
-  var SUPPORTED_SOURCE_LANGUAGES = ["bash", "css", "html", "javascript", "json", "python", "ruby", "swift", "typescript"];
+  var SUPPORTED_SOURCE_LANGUAGES = ["bash", "css", "html", "javascript", "json", "python", "ruby", "swift", "typescript", "xml"];
   var SOURCE_LANGUAGE_REGISTRATIONS = [
     shellscript_default,
     css_default,
@@ -13229,7 +13653,8 @@
     python_default,
     ruby_default,
     swift_default,
-    typescript_default
+    typescript_default,
+    xml_default
   ];
   var THEME_REGISTRATIONS = Themes_default.themes.map((theme) => {
     const registration = THEME_MODULE_MAP[theme.id];
@@ -13257,6 +13682,9 @@
   }
   function isJSONLanguage(languageName) {
     return languageName === "json";
+  }
+  function isXMLLanguage(languageName) {
+    return languageName === "xml";
   }
   function getHighlighter() {
     if (!highlighterPromise) {
@@ -13349,6 +13777,15 @@
     return `${JSON.stringify(JSON.parse(content), null, 2)}
 `;
   }
+  function formatXMLDocument(content) {
+    return `${(0, import_xml_formatter.default)(content, {
+      indentation: "  ",
+      lineSeparator: "\n",
+      collapseContent: true,
+      throwOnFailure: true
+    })}
+`;
+  }
   function resolveThemeSurface(themeId) {
     const theme = THEME_MODULE_MAP[themeId];
     const colors = theme?.colors ?? {};
@@ -13417,6 +13854,22 @@
           lightTheme,
           darkTheme,
           notice: "Invalid JSON. Showing the original source."
+        });
+      }
+    }
+    if (isXMLLanguage(lang24)) {
+      try {
+        return makeRenderResult({
+          html: await renderHighlightedSource(formatXMLDocument(content), "xml", lightTheme, darkTheme),
+          lightTheme,
+          darkTheme
+        });
+      } catch {
+        return makeRenderResult({
+          html: renderPlainText(content, lang24),
+          lightTheme,
+          darkTheme,
+          notice: "Invalid XML. Showing the original source."
         });
       }
     }

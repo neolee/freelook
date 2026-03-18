@@ -210,6 +210,10 @@ The current v1.0 `QLSupportedContentTypes` baseline is:
 - `net.ia.markdown`
 - `public.json`
 - `public.xml`
+- `public.plain-text`
+- `com.apple.property-list`
+- `com.apple.xml-property-list`
+- `com.apple.xcode.entitlements-property-list`
 
 This list should be treated as the baseline validation surface for FreeLook v1.0. Future registration work should begin by validating this whitelist against real files and real system `UTType` resolution behavior before expanding it.
 

@@ -108,6 +108,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             ? "<div class=\"preview-notice\">Large file. Showing the first 500 KB.</div>"
             : ""
         let hasInitialNotice = preview.didTruncate ? "" : " hidden"
+        let debugPlainTextBadge = makeDebugPlainTextBadge(for: languageIdentifier)
 
         let renderPayload = makeRenderPayloadJSON(
             content: preview.content,
@@ -117,6 +118,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         )
 
         let content = """
+        \(debugPlainTextBadge)
         <div id="preview-notice-stack" class="preview-notice-stack" aria-live="polite"\(hasInitialNotice)>
           \(truncationNotice)
           <div id="preview-renderer-notice" class="preview-notice" hidden></div>
@@ -296,6 +298,18 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     private func makeBodyStyle(codeFontName: String, codeFontSize: Int) -> String {
         let codeFontStack = Settings.codeFontStack(for: codeFontName)
         return "--preview-code-font: \(codeFontStack); --preview-code-font-size: \(codeFontSize)px;"
+    }
+
+    private func makeDebugPlainTextBadge(for languageIdentifier: String) -> String {
+        #if DEBUG
+        guard languageIdentifier == "text" else {
+            return ""
+        }
+
+        return "<div class=\"preview-debug-badge\">FreeLook Plain Text</div>"
+        #else
+        return ""
+        #endif
     }
 
     private func previewAppearanceToken(for mode: String) -> String {

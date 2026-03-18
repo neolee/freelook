@@ -98,6 +98,10 @@
 				<string>net.ia.markdown</string>
 				<string>public.json</string>
 				<string>public.xml</string>
+				<string>public.plain-text</string>
+				<string>com.apple.property-list</string>
+				<string>com.apple.xml-property-list</string>
+				<string>com.apple.xcode.entitlements-property-list</string>
 			</array>
 			<key>QLSupportsSearchableItems</key>
 			<false/>

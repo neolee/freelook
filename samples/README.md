@@ -12,8 +12,10 @@ This directory contains committed sample files for design review, manual Quick L
 
 - `markdown_showcase.md` — Markdown and practical GFM review surface
 - `valid.json` — prettified JSON baseline
+- `compact.json` — valid single-line JSON for prettify verification
 - `invalid.json` — invalid JSON fallback and warning state
 - `valid.xml` — prettified XML baseline
+- `compact.xml` — valid single-line XML for prettify verification
 - `invalid.xml` — invalid XML fallback and warning state
 - `Example.swift` — Swift syntax highlighting sample
 - `example.py` — Python syntax highlighting sample
