@@ -15,6 +15,7 @@
 		B5A7CCD12F68111200988F0A /* QuickLookExtension/UTIMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A7CCD22F68111200988F0A /* QuickLookExtension/UTIMapper.swift */; };
 		C9A100102F689500006D34B2 /* QuickLookExtension/FileLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A100112F689500006D34B2 /* QuickLookExtension/FileLoader.swift */; };
 		C9A100202F689500006D34B2 /* QuickLookExtension/Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A100212F689500006D34B2 /* QuickLookExtension/Settings.swift */; };
+		C9A100312F700002006D34B2 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = C9A100322F700002006D34B2 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +61,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B5A7CC912F680B2A00988F0A /* Exceptions for "FreeLook" folder in "FreeLook" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B5A7CC962F680B2A00988F0A /* FreeLook */;
+		};
 		B5A7CCB92F680BA200988F0A /* Exceptions for "QuickLookExtension" folder in "QuickLookExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -72,6 +80,9 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B5A7CC992F680B2A00988F0A /* FreeLook */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B5A7CC912F680B2A00988F0A /* Exceptions for "FreeLook" folder in "FreeLook" target */,
+			);
 			path = FreeLook;
 			sourceTree = "<group>";
 		};
@@ -96,6 +107,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5A7CCCE2F68111100988F0A /* AppIntents.framework in Frameworks */,
+				C9A100312F700002006D34B2 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,6 +194,7 @@
 			);
 			name = FreeLook;
 			packageProductDependencies = (
+				C9A100322F700002006D34B2 /* Sparkle */,
 			);
 			productName = FreeLook;
 			productReference = B5A7CC972F680B2A00988F0A /* FreeLook.app */;
@@ -478,6 +491,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FreeLook/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FreeLook;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -485,7 +499,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.paradigmx.FreeLook;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -513,6 +527,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FreeLook/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FreeLook;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -520,7 +535,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.paradigmx.FreeLook;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -553,7 +568,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.paradigmx.FreeLook.QuickLookExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -586,7 +601,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.paradigmx.FreeLook.QuickLookExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -692,6 +707,14 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C9A100322F700002006D34B2 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B5A7CCCD2F680D1A00988F0A /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B5A7CC8F2F680B2A00988F0A /* Project object */;
 }

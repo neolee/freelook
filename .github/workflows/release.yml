@@ -43,6 +43,11 @@ jobs:
           echo "--- SDK Path ---"
           xcrun --show-sdk-path
 
+      - name: Build Verification
+        run: |
+          ./scripts/build
+          ./scripts/test
+
       - name: Install Apple Certificate
         env:
           CERTIFICATE_P12: ${{ secrets.CERTIFICATE_P12 }}
@@ -128,13 +133,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/sparkle-tools
-          key: sparkle-tools-2.8.1
+          key: sparkle-tools-2.9.0
 
       - name: Download Sparkle Tools
         if: steps.cache-sparkle.outputs.cache-hit != 'true'
         run: |
           mkdir -p /tmp/sparkle-tools
-          curl -L https://github.com/sparkle-project/Sparkle/releases/download/2.8.1/Sparkle-2.8.1.tar.xz -o /tmp/sparkle.tar.xz
+          curl -L https://github.com/sparkle-project/Sparkle/releases/download/2.9.0/Sparkle-2.9.0.tar.xz -o /tmp/sparkle.tar.xz
           tar -xJf /tmp/sparkle.tar.xz -C /tmp/sparkle-tools
           find /tmp/sparkle-tools -name "generate_appcast" -exec chmod +x {} \;
 

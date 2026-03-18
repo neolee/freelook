@@ -17,5 +17,13 @@ struct FreeLookApp: App {
             ContentView(settingsStore: settingsStore)
         }
         .defaultSize(width: 620, height: 500)
+        .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") {
+                    appDelegate.checkForUpdates()
+                }
+                .disabled(!appDelegate.canCheckForUpdates)
+            }
+        }
     }
 }
