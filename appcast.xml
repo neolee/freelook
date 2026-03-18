@@ -9,6 +9,15 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Latest FreeLook releases</description>
         <language>en</language>
         <item>
+            <title>0.9.4</title>
+            <pubDate>Wed, 18 Mar 2026 17:29:49 +0000</pubDate>
+            <link>https://github.com/neolee/freelook</link>
+            <sparkle:version>5</sparkle:version>
+            <sparkle:shortVersionString>0.9.4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.6</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/neolee/freelook/releases/download/v0.9.4/FreeLook.dmg" length="5147363" type="application/octet-stream" sparkle:edSignature="LhLpEhe0ngeLVVejpxz1TdQ7V1FOaWetV21Puf6ZNRrWIkObV2HYGV0pzymKU2EUmNzKl3ivVAqooTHNYv2DBw=="/>
+        </item>
+        <item>
             <title>0.9.3</title>
             <pubDate>Wed, 18 Mar 2026 17:17:45 +0000</pubDate>
             <link>https://github.com/neolee/freelook</link>
@@ -26,18 +35,9 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
             <sparkle:minimumSystemVersion>14.6</sparkle:minimumSystemVersion>
             <enclosure url="https://github.com/neolee/freelook/releases/download/v0.9.2/FreeLook.dmg" length="5147244" type="application/octet-stream" sparkle:edSignature="7oaYAVq9mhH4w7E8Ri8qXQZx3A43VpUN9HwOMBq/tGNLumKHJPc8y8MnzxoIqqsTE2Qasv7h6GGe4QYowFZLDg=="/>
         </item>
-        <item>
-            <title>0.9.1</title>
-            <pubDate>Wed, 18 Mar 2026 17:02:21 +0000</pubDate>
-            <link>https://github.com/neolee/freelook</link>
-            <sparkle:version>2</sparkle:version>
-            <sparkle:shortVersionString>0.9.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.6</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/neolee/freelook/releases/download/v0.9.1/FreeLook.dmg" length="5147286" type="application/octet-stream" sparkle:edSignature="QjAfIkJ0fARInvfq2BI5oLhBl0Lmfdrk1PJqRHFVGjafkD6QHJYCPNegXn+BO8hnvo9YvYVbWFuIdtnxgl4uDQ=="/>
-        </item>
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: G38np71U3VC3pkBJm+x3mXwVYrlN5UuEwPHky03AAqYK9HzRR3CXfbYwO4wLN6+g7+YqgEz4d+Wf+y8piYlFBQ==
+edSignature: AdkBJ+jh31ZjzV6F5PeTpn4YeO6OSI8baAdl+spowiF9sH2t4IC7YaJy8c+W3BYnhVY5AL1vRl2R0S9EQq/rBQ==
 length: 2617
 -->
