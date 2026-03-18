@@ -7,12 +7,14 @@
 #
 # Required GitHub Secrets:
 #   SPARKLE_PRIVATE_KEY    – base64 private key from `generate_keys`
-#   CERTIFICATE_P12        – base64 Developer ID Application cert (.p12)
-#   CERTIFICATE_PASSWORD   – password for the .p12 file
-#   KEYCHAIN_PASSWORD      – a temporary password for the CI keychain
-#   APPLE_ID               – your Apple ID e-mail
-#   APPLE_PASSWORD         – app-specific password from appleid.apple.com
-#   TEAM_ID                – 10-char Apple Team ID
+#   CERTIFICATE_P12             – base64 Developer ID Application cert (.p12)
+#   CERTIFICATE_PASSWORD        – password for the .p12 file
+#   KEYCHAIN_PASSWORD           – a temporary password for the CI keychain
+#   APP_PROVISIONING_PROFILE    – base64 Developer ID provisioning profile for `net.paradigmx.FreeLook`
+#   APPEX_PROVISIONING_PROFILE  – base64 Developer ID provisioning profile for `net.paradigmx.FreeLook.QuickLookExtension`
+#   APPLE_ID                    – your Apple ID e-mail
+#   APPLE_PASSWORD              – app-specific password from appleid.apple.com
+#   TEAM_ID                     – 10-char Apple Team ID
 
 name: Release
 
@@ -57,6 +59,39 @@ jobs:
           security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
 
+      - name: Install Provisioning Profiles
+        env:
+          APP_PROVISIONING_PROFILE: ${{ secrets.APP_PROVISIONING_PROFILE }}
+          APPEX_PROVISIONING_PROFILE: ${{ secrets.APPEX_PROVISIONING_PROFILE }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+        run: |
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          echo "$APP_PROVISIONING_PROFILE" | base64 --decode > app.provisionprofile
+          echo "$APPEX_PROVISIONING_PROFILE" | base64 --decode > appex.provisionprofile
+
+          security cms -D -i app.provisionprofile > app-profile.plist
+          security cms -D -i appex.provisionprofile > appex-profile.plist
+
+          APP_PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' app-profile.plist)
+          APP_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' app-profile.plist)
+          APP_PROFILE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' app-profile.plist)
+
+          APPEX_PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' appex-profile.plist)
+          APPEX_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' appex-profile.plist)
+          APPEX_PROFILE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' appex-profile.plist)
+
+          test "$APP_PROFILE_APP_ID" = "$TEAM_ID.net.paradigmx.FreeLook"
+          test "$APPEX_PROFILE_APP_ID" = "$TEAM_ID.net.paradigmx.FreeLook.QuickLookExtension"
+
+          cp app.provisionprofile "$HOME/Library/MobileDevice/Provisioning Profiles/$APP_PROFILE_UUID.provisionprofile"
+          cp appex.provisionprofile "$HOME/Library/MobileDevice/Provisioning Profiles/$APPEX_PROFILE_UUID.provisionprofile"
+
+          {
+            echo "APP_PROFILE_NAME=$APP_PROFILE_NAME"
+            echo "APPEX_PROFILE_NAME=$APPEX_PROFILE_NAME"
+          } >> "$GITHUB_ENV"
+
       - name: Build and Archive
         run: |
           xcodebuild archive \
@@ -65,16 +100,43 @@ jobs:
             -configuration Release \
             -archivePath build/FreeLook.xcarchive \
             -destination "generic/platform=macOS" \
-            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Developer ID Application" \
             OTHER_CODE_SIGN_FLAGS="--timestamp" \
             DEVELOPMENT_TEAM=${{ secrets.TEAM_ID }}
+
+      - name: Generate Export Options
+        env:
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+        run: |
+          cat > exportOptions.ci.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>developer-id</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>signingCertificate</key>
+            <string>Developer ID Application</string>
+            <key>teamID</key>
+            <string>${TEAM_ID}</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>net.paradigmx.FreeLook</key>
+              <string>${APP_PROFILE_NAME}</string>
+              <key>net.paradigmx.FreeLook.QuickLookExtension</key>
+              <string>${APPEX_PROFILE_NAME}</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
 
       - name: Export App
         run: |
           xcodebuild -exportArchive \
             -archivePath build/FreeLook.xcarchive \
-            -exportOptionsPlist exportOptions.plist \
+            -exportOptionsPlist exportOptions.ci.plist \
             -exportPath build/Export
 
       - name: Notarize App
