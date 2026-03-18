@@ -1,11 +1,22 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><!-- sparkle-sign-warning:
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- sparkle-sign-warning:
 IMPORTANT: This file was signed by Sparkle. Any modifications to this file requires re-signing this file with generate_appcast or sign_update! The signed signature will be embedded at the end of this file.
---><rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+-->
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
     <channel>
         <title>FreeLook Updates</title>
         <link>https://github.com/neolee/freelook/releases</link>
         <description>Latest FreeLook releases</description>
         <language>en</language>
+        <item>
+            <title>0.9.1</title>
+            <pubDate>Wed, 18 Mar 2026 17:02:21 +0000</pubDate>
+            <link>https://github.com/neolee/freelook</link>
+            <sparkle:version>2</sparkle:version>
+            <sparkle:shortVersionString>0.9.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.6</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/neolee/freelook/releases/download/v0.9.1/FreeLook.dmg" length="5147286" type="application/octet-stream" sparkle:edSignature="QjAfIkJ0fARInvfq2BI5oLhBl0Lmfdrk1PJqRHFVGjafkD6QHJYCPNegXn+BO8hnvo9YvYVbWFuIdtnxgl4uDQ=="/>
+        </item>
         <item>
             <title>0.9.0</title>
             <pubDate>Wed, 18 Mar 2026 16:33:25 +0000</pubDate>
@@ -13,10 +24,11 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
             <sparkle:version>1</sparkle:version>
             <sparkle:shortVersionString>0.9.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.6</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/neolee/freelook/releases/download/v0.9.0/FreeLook.dmg" length="5147200" type="application/octet-stream" sparkle:edSignature="iPVcWaDukoegH3WvBcUhdsXaLYHv26dloBMPsXlPxjuslOy1XpWKPdU07UfIt2+k0Q33SZ2EMjG4BCwSqlnTBg=="></enclosure>
+            <enclosure url="https://github.com/neolee/freelook/releases/download/v0.9.0/FreeLook.dmg" length="5147200" type="application/octet-stream" sparkle:edSignature="iPVcWaDukoegH3WvBcUhdsXaLYHv26dloBMPsXlPxjuslOy1XpWKPdU07UfIt2+k0Q33SZ2EMjG4BCwSqlnTBg=="/>
         </item>
     </channel>
-</rss><!-- sparkle-signatures:
-edSignature: FB21m6x0wCBvkHhnWyGrsUueU8dxVE05UNRJCBfJuY8LdGZ/OGw4UM5EDZ+FtlSjjWE/wJHqXKTjdR4nHVwUDw==
-length: 1319
+</rss>
+<!-- sparkle-signatures:
+edSignature: UTLFIba0Hxod3wVVn67GuMWoMlcZx5Q+7sxY7glLgLv1L9ERTiBt4UMNPSwUMRPs4WqCFM8VdbrWC0qZKYkmAQ==
+length: 1964
 -->
