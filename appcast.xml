@@ -9,6 +9,15 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Latest FreeLook releases</description>
         <language>en</language>
         <item>
+            <title>0.9.2</title>
+            <pubDate>Wed, 18 Mar 2026 17:08:41 +0000</pubDate>
+            <link>https://github.com/neolee/freelook</link>
+            <sparkle:version>3</sparkle:version>
+            <sparkle:shortVersionString>0.9.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.6</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/neolee/freelook/releases/download/v0.9.2/FreeLook.dmg" length="5147244" type="application/octet-stream" sparkle:edSignature="7oaYAVq9mhH4w7E8Ri8qXQZx3A43VpUN9HwOMBq/tGNLumKHJPc8y8MnzxoIqqsTE2Qasv7h6GGe4QYowFZLDg=="/>
+        </item>
+        <item>
             <title>0.9.1</title>
             <pubDate>Wed, 18 Mar 2026 17:02:21 +0000</pubDate>
             <link>https://github.com/neolee/freelook</link>
@@ -29,6 +38,6 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: UTLFIba0Hxod3wVVn67GuMWoMlcZx5Q+7sxY7glLgLv1L9ERTiBt4UMNPSwUMRPs4WqCFM8VdbrWC0qZKYkmAQ==
-length: 1964
+edSignature: zj5paVEYxJmCE3b+AZ0nDiXarHPNmzCZLdlUG9cSdZQu7qiBFhml/aXp3zJpJ0638OFKdq/+nVssnPt9kKUPDw==
+length: 2617
 -->
