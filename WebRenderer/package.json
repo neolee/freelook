@@ -5,6 +5,8 @@
   "packageManager": "bun@1.3.10",
   "scripts": {
     "build": "bun run esbuild.config.mjs",
+    "build:dev": "bun run esbuild.config.mjs --dev",
+    "watch": "bun run esbuild.config.mjs --dev --watch",
     "test": "bun test"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
 import { build, context } from "esbuild";
 
+const devMode = process.argv.includes("--dev");
 const watchMode = process.argv.includes("--watch");
 
 const config = {
@@ -9,7 +10,9 @@ const config = {
   format: "iife",
   platform: "browser",
   target: ["safari17"],
-  sourcemap: true,
+  sourcemap: devMode,
+  minify: !devMode,
+  legalComments: devMode ? "inline" : "none",
   logLevel: "info",
 };
 
