@@ -63,11 +63,11 @@ These should follow after Tier 1.
 
 | Type | Shiki lang | Common extensions | Notes |
 |---|---|---|---|
-| Kotlin | `kotlin` | `.kt`, `.kts` | Include script form if routing is reasonable |
+| Kotlin | `kotlin` | `.kt`, `.kts` | Both currently resolve to `org.kotlinlang.source` on the current machine |
 | C# | `csharp` | `.cs` | Mainstream and worth shipping in 1.0 |
-| PHP | `php` | `.php`, `.phtml` | Use a conservative extension set unless real routing data justifies more |
-| Lua | `lua` | `.lua` | Small footprint, high utility |
-| Scala | `scala` | `.scala`, `.sc` | Include worksheet/script form only if system routing is sane |
+| PHP | `php` | `.php`, `.phtml` | Start with `.php`; widen only if real routing data justifies more |
+| Lua | `lua` | `.lua` | Current machine exposes both `public.lua-source` and `org.lua.lua`; support both |
+| Scala | `scala` | `.scala`, `.sc` | Support `.scala` via `org.scala-lang.scala`; support `.sc` via product-defined `net.paradigmx.scala-script` |
 
 ### Tier 3: Developer Config and Build Files
 

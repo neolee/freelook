@@ -4,15 +4,20 @@ import { fromHighlighter } from "@shikijs/markdown-it";
 import bashLanguage from "shiki/dist/langs/bash.mjs";
 import clojureLanguage from "shiki/dist/langs/clojure.mjs";
 import cssLanguage from "shiki/dist/langs/css.mjs";
+import csharpLanguage from "shiki/dist/langs/csharp.mjs";
 import goLanguage from "shiki/dist/langs/go.mjs";
 import haskellLanguage from "shiki/dist/langs/haskell.mjs";
 import htmlLanguage from "shiki/dist/langs/html.mjs";
 import javaLanguage from "shiki/dist/langs/java.mjs";
 import javascriptLanguage from "shiki/dist/langs/javascript.mjs";
 import jsonLanguage from "shiki/dist/langs/json.mjs";
+import kotlinLanguage from "shiki/dist/langs/kotlin.mjs";
+import luaLanguage from "shiki/dist/langs/lua.mjs";
+import phpLanguage from "shiki/dist/langs/php.mjs";
 import pythonLanguage from "shiki/dist/langs/python.mjs";
 import rustLanguage from "shiki/dist/langs/rust.mjs";
 import rubyLanguage from "shiki/dist/langs/ruby.mjs";
+import scalaLanguage from "shiki/dist/langs/scala.mjs";
 import swiftLanguage from "shiki/dist/langs/swift.mjs";
 import typescriptLanguage from "shiki/dist/langs/typescript.mjs";
 import xmlLanguage from "shiki/dist/langs/xml.mjs";
@@ -63,15 +68,20 @@ const SUPPORTED_SOURCE_LANGUAGES = [
   "bash",
   "clojure",
   "css",
+  "csharp",
   "go",
   "haskell",
   "html",
   "java",
   "javascript",
   "json",
+  "kotlin",
+  "lua",
+  "php",
   "python",
   "ruby",
   "rust",
+  "scala",
   "swift",
   "typescript",
   "xml",
@@ -81,15 +91,20 @@ const SOURCE_LANGUAGE_REGISTRATIONS = [
   bashLanguage,
   clojureLanguage,
   cssLanguage,
+  csharpLanguage,
   goLanguage,
   haskellLanguage,
   htmlLanguage,
   javaLanguage,
   javascriptLanguage,
   jsonLanguage,
+  kotlinLanguage,
+  luaLanguage,
+  phpLanguage,
   pythonLanguage,
   rustLanguage,
   rubyLanguage,
+  scalaLanguage,
   swiftLanguage,
   typescriptLanguage,
   xmlLanguage,

@@ -20,6 +20,11 @@ describe("renderer bootstrap", () => {
     expect(normalizeLanguageName("java")).toBe("java");
     expect(normalizeLanguageName("haskell")).toBe("haskell");
     expect(normalizeLanguageName("clojure")).toBe("clojure");
+    expect(normalizeLanguageName("kotlin")).toBe("kotlin");
+    expect(normalizeLanguageName("csharp")).toBe("csharp");
+    expect(normalizeLanguageName("php")).toBe("php");
+    expect(normalizeLanguageName("lua")).toBe("lua");
+    expect(normalizeLanguageName("scala")).toBe("scala");
     expect(normalizeLanguageName("text")).toBeNull();
     expect(normalizeLanguageName("unknown")).toBeNull();
   });

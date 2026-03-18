@@ -32,6 +32,23 @@ enum UTIMapper {
     private static let haskellTypes = supportedTypes(
         "org.haskell.haskell"
     )
+    private static let kotlinTypes = supportedTypes(
+        "org.kotlinlang.source"
+    )
+    private static let csharpTypes = supportedTypes(
+        "com.microsoft.c-sharp"
+    )
+    private static let phpTypes = supportedTypes(
+        "public.php-script"
+    )
+    private static let luaTypes = supportedTypes(
+        "public.lua-source",
+        "org.lua.lua"
+    )
+    private static let scalaTypes = supportedTypes(
+        "org.scala-lang.scala",
+        "net.paradigmx.scala-script"
+    )
     private static let clojureTypes = supportedTypes(
         "net.paradigmx.clojure-source",
         "org.cloture.cloture",
@@ -102,6 +119,26 @@ enum UTIMapper {
 
         if matches(contentType, anyOf: haskellTypes) {
             return "haskell"
+        }
+
+        if matches(contentType, anyOf: kotlinTypes) {
+            return "kotlin"
+        }
+
+        if matches(contentType, anyOf: csharpTypes) {
+            return "csharp"
+        }
+
+        if matches(contentType, anyOf: phpTypes) {
+            return "php"
+        }
+
+        if matches(contentType, anyOf: luaTypes) {
+            return "lua"
+        }
+
+        if matches(contentType, anyOf: scalaTypes) {
+            return "scala"
         }
 
         if matches(contentType, anyOf: clojureTypes) {

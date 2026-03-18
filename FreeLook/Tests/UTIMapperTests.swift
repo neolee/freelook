@@ -64,6 +64,29 @@ struct UTIMapperTests {
         #expect(UTIMapper.languageIdentifier(for: UTType("org.haskell.haskell")) == "haskell")
     }
 
+    @Test func mapsKotlin() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("org.kotlinlang.source")) == "kotlin")
+    }
+
+    @Test func mapsCSharp() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("com.microsoft.c-sharp")) == "csharp")
+    }
+
+    @Test func mapsPHP() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("public.php-script")) == "php")
+    }
+
+    @Test func mapsLua() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("public.lua-source")) == "lua")
+        #expect(UTIMapper.languageIdentifier(for: UTType("org.lua.lua")) == "lua")
+    }
+
+    @Test func mapsScala() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("org.scala-lang.scala")) == "scala")
+        #expect(UTIMapper.languageIdentifier(for: UTType("net.paradigmx.scala-script")) == "scala")
+        #expect(UTIMapper.languageIdentifier(for: UTType("dyn.age81g22")) == "text")
+    }
+
     @Test func mapsClojure() {
         #expect(UTIMapper.languageIdentifier(for: UTType("net.paradigmx.clojure-source")) == "clojure")
         #expect(UTIMapper.languageIdentifier(for: UTType("org.cloture.cloture")) == "clojure")

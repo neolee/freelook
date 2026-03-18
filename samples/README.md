@@ -19,6 +19,13 @@ This directory contains committed sample files for design review, manual Quick L
 - `invalid.xml` — invalid XML fallback and warning state
 - `Example.swift` — Swift syntax highlighting sample
 - `Example.java` — Java syntax highlighting sample
+- `example.kt` — Kotlin syntax highlighting sample
+- `example.kts` — Kotlin script syntax highlighting sample
+- `Example.cs` — C# syntax highlighting sample
+- `example.php` — PHP syntax highlighting sample
+- `example.lua` — Lua syntax highlighting sample
+- `Example.scala` — Scala syntax highlighting sample
+- `example.sc` — Scala script syntax highlighting sample
 - `example.py` — Python syntax highlighting sample
 - `example.js` — JavaScript syntax highlighting sample
 - `example.rs` — Rust syntax highlighting sample
