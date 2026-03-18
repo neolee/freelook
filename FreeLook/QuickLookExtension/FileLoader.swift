@@ -45,9 +45,7 @@ enum FileLoader {
             try? handle.close()
         }
 
-        guard let rawData = try handle.read(upToCount: maximumPreviewBytes + 1) else {
-            throw FileLoaderError.couldNotReadFile
-        }
+        let rawData = try handle.read(upToCount: maximumPreviewBytes + 1) ?? Data()
 
         let didTruncate = rawData.count > maximumPreviewBytes
         let previewData = Data(didTruncate ? rawData.prefix(maximumPreviewBytes) : rawData)

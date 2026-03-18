@@ -61,6 +61,19 @@ describe("renderer bootstrap", () => {
     expect(typeof surface.darkBackground).toBe("string");
   });
 
+  test("returns the selected theme surface colors", async () => {
+    const result = await renderPreview({
+      content: "let answer = 42\n",
+      lang: "swift",
+      lightTheme: "Ayu Light",
+      darkTheme: "Nord",
+    });
+
+    expect(result.surface.lightBackground).not.toBeNull();
+    expect(result.surface.darkBackground).not.toBeNull();
+    expect(result.surface.lightBackground).not.toBe(result.surface.darkBackground);
+  });
+
   test("falls back to escaped plain text for unsupported languages", async () => {
     const result = await renderPreview({
       content: "plain <text>",
@@ -118,6 +131,20 @@ describe("renderer bootstrap", () => {
     expect(html).toContain("class=\"shiki");
     expect(notice).toBeNull();
     expect(typeof surface.lightBackground).toBe("string");
+  });
+
+  test("falls back to plain text for unsupported Markdown fences", async () => {
+    const result = await renderPreview({
+      content: [
+        "```unknownlang",
+        "<tag>",
+        "```",
+      ].join("\n"),
+      lang: "markdown",
+    });
+
+    expect(result.html).toContain("freelook-plain");
+    expect(result.html).toContain("&lt;tag&gt;");
   });
 
   test("renders prettified JSON with Shiki highlighting", async () => {

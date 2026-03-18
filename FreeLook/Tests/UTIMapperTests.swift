@@ -9,6 +9,13 @@ import Testing
 import UniformTypeIdentifiers
 
 struct UTIMapperTests {
+    @Test func fallsBackByFileNameWhenContentTypeIsUnavailable() {
+        #expect(UTIMapper.languageIdentifier(for: nil, fileName: "Dockerfile") == "dockerfile")
+        #expect(UTIMapper.languageIdentifier(for: nil, fileName: "Makefile") == "makefile")
+        #expect(UTIMapper.languageIdentifier(for: nil, fileName: "CMakeLists.txt") == "cmake")
+        #expect(UTIMapper.languageIdentifier(for: nil, fileName: "unknown.txt") == "text")
+    }
+
     @Test func mapsMarkdown() {
         let contentType = UTType("net.daringfireball.markdown")
         #expect(UTIMapper.languageIdentifier(for: contentType) == "markdown")

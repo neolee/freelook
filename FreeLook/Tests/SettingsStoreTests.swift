@@ -60,6 +60,38 @@ struct SettingsStoreTests {
         #expect(store.selectedCodeFontSize == SettingsStore.defaultCodeFontSize)
     }
 
+    @Test func resetToDefaultsPersistsNormalizedValues() {
+        let defaults = temporaryDefaults()
+        let store = SettingsStore(userDefaults: defaults)
+
+        if let customFont = SettingsStore.codeFontOptions.dropFirst().first {
+            store.selectedCodeFont = customFont
+        }
+        store.previewAppearanceMode = SettingsStore.previewAppearanceModeOptions[1]
+        store.lightTheme = SettingsStore.lightThemeOptions[1]
+        store.darkTheme = SettingsStore.darkThemeOptions[1]
+        store.selectedCodeFontSize = SettingsStore.maximumCodeFontSize
+
+        store.resetToDefaults()
+
+        let reloadedStore = SettingsStore(userDefaults: defaults)
+        #expect(reloadedStore.previewAppearanceMode == SettingsStore.defaultPreviewAppearanceMode)
+        #expect(reloadedStore.lightTheme == SettingsStore.defaultLightTheme)
+        #expect(reloadedStore.darkTheme == SettingsStore.defaultDarkTheme)
+        #expect(reloadedStore.selectedCodeFont == SettingsStore.defaultCodeFont)
+        #expect(reloadedStore.selectedCodeFontSize == SettingsStore.defaultCodeFontSize)
+    }
+
+    @Test func buildsExpectedCodeFontStacks() {
+        #expect(Settings.codeFontStack(for: Settings.systemDefaultCodeFont) == "monospace")
+
+        if let customFont = Settings.codeFontOptions.dropFirst().first {
+            #expect(Settings.codeFontStack(for: customFont) == "\"\(customFont)\", monospace")
+        }
+
+        #expect(Settings.codeFontStack(for: "Not A Valid Font") == "monospace")
+    }
+
     private func temporaryDefaults() -> UserDefaults {
         let suiteName = "net.paradigmx.FreeLook.tests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

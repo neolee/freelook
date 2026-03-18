@@ -9,6 +9,15 @@ import Foundation
 import Testing
 
 struct FileLoaderTests {
+    @Test func loadsEmptyFiles() throws {
+        let url = try temporaryFile(named: "empty.txt", data: Data())
+
+        let result = try FileLoader.loadPreview(for: url)
+
+        #expect(result.content.isEmpty)
+        #expect(result.didTruncate == false)
+    }
+
     @Test func loadsUTF8Content() throws {
         let url = try temporaryFile(named: "utf8.swift", data: Data("print(\"FreeLook\")".utf8))
 
