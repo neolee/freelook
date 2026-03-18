@@ -4,7 +4,18 @@
 <dict>
 	<key>method</key>
 	<string>developer-id</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>net.paradigmx.FreeLook</key>
+		<string>FreeLook Release</string>
+		<key>net.paradigmx.FreeLook.QuickLookExtension</key>
+		<string>FreeLookExtension Release</string>
+	</dict>
+	<key>signingCertificate</key>
+	<string>Developer ID Application</string>
 	<key>signingStyle</key>
 	<string>manual</string>
+	<key>teamID</key>
+	<string>S2D42Y29YT</string>
 </dict>
 </plist>
