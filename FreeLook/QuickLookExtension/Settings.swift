@@ -10,6 +10,11 @@ import CoreText
 import Foundation
 
 enum Settings {
+    struct ThemeSurface: Equatable {
+        let background: String?
+        let foreground: String?
+    }
+
     private struct ThemeManifest: Decodable {
         struct Defaults: Decodable {
             let light: String
@@ -17,9 +22,15 @@ enum Settings {
         }
 
         struct Theme: Decodable {
+            struct Surface: Decodable {
+                let background: String?
+                let foreground: String?
+            }
+
             let id: String
             let displayName: String
             let appearance: String
+            let surface: Surface?
         }
 
         let defaults: Defaults
@@ -55,6 +66,8 @@ enum Settings {
     static let minimumCodeFontSize = 12
     static let maximumCodeFontSize = 20
     static let defaultCodeFontSize = 14
+    static let fallbackLightSurface = ThemeSurface(background: "#fcfbf7", foreground: "#17212c")
+    static let fallbackDarkSurface = ThemeSurface(background: "#14181f", foreground: "#e7ebef")
 
     static func userDefaults() -> UserDefaults {
         UserDefaults(suiteName: appGroupSuiteName) ?? .standard
@@ -120,6 +133,63 @@ enum Settings {
         }
     }
 
+    static func themeSurface(forDisplayName displayName: String) -> ThemeSurface? {
+        let normalizedDisplayName: String
+
+        if lightThemeOptions.contains(displayName) {
+            normalizedDisplayName = normalizedLightTheme(displayName)
+        } else if darkThemeOptions.contains(displayName) {
+            normalizedDisplayName = normalizedDarkTheme(displayName)
+        } else {
+            normalizedDisplayName = displayName
+        }
+
+        guard let theme = themeManifest.themes.first(where: { $0.displayName == normalizedDisplayName }) else {
+            return nil
+        }
+
+        return themeSurface(for: theme)
+    }
+
+    static func previewSurface(
+        previewAppearanceMode: String,
+        lightTheme: String,
+        darkTheme: String,
+        effectiveAppearance: NSAppearance
+    ) -> ThemeSurface {
+        if usesDarkPreviewSurface(previewAppearanceMode: previewAppearanceMode, effectiveAppearance: effectiveAppearance) {
+            return themeSurface(forDisplayName: normalizedDarkTheme(darkTheme))
+                ?? defaultThemeSurface(forAppearance: "dark")
+        }
+
+        return themeSurface(forDisplayName: normalizedLightTheme(lightTheme))
+            ?? defaultThemeSurface(forAppearance: "light")
+    }
+
+    static func lightThemeSurface(forDisplayName displayName: String) -> ThemeSurface {
+        themeSurface(forDisplayName: normalizedLightTheme(displayName))
+            ?? defaultThemeSurface(forAppearance: "light")
+    }
+
+    static func darkThemeSurface(forDisplayName displayName: String) -> ThemeSurface {
+        themeSurface(forDisplayName: normalizedDarkTheme(displayName))
+            ?? defaultThemeSurface(forAppearance: "dark")
+    }
+
+    static func usesDarkPreviewSurface(
+        previewAppearanceMode: String,
+        effectiveAppearance: NSAppearance
+    ) -> Bool {
+        switch normalizedPreviewAppearanceMode(previewAppearanceMode) {
+        case "Always Light":
+            return false
+        case "Always Dark":
+            return true
+        default:
+            return effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+        }
+    }
+
     private static func availableMonospacedFonts() -> [String] {
         let families = NSFontManager.shared.availableFontFamilies
         var results = Set<String>()
@@ -168,10 +238,42 @@ enum Settings {
         return ThemeManifest(
             defaults: .init(light: "GitHub Light", dark: "GitHub Dark"),
             themes: [
-                .init(id: "github-light", displayName: "GitHub Light", appearance: "light"),
-                .init(id: "github-dark", displayName: "GitHub Dark", appearance: "dark"),
+                .init(
+                    id: "github-light",
+                    displayName: "GitHub Light",
+                    appearance: "light",
+                    surface: .init(background: "#fff", foreground: "#24292e")
+                ),
+                .init(
+                    id: "github-dark",
+                    displayName: "GitHub Dark",
+                    appearance: "dark",
+                    surface: .init(background: "#24292e", foreground: "#e1e4e8")
+                ),
             ]
         )
+    }
+
+    private static func themeSurface(for theme: ThemeManifest.Theme) -> ThemeSurface? {
+        guard let surface = theme.surface else {
+            return nil
+        }
+
+        return ThemeSurface(
+            background: surface.background,
+            foreground: surface.foreground
+        )
+    }
+
+    private static func defaultThemeSurface(forAppearance appearance: String) -> ThemeSurface {
+        let defaultThemeName = appearance == "dark" ? themeManifest.defaults.dark : themeManifest.defaults.light
+        let fallbackSurface = appearance == "dark" ? fallbackDarkSurface : fallbackLightSurface
+
+        guard let theme = themeManifest.themes.first(where: { $0.displayName == defaultThemeName }) else {
+            return fallbackSurface
+        }
+
+        return themeSurface(for: theme) ?? fallbackSurface
     }
 
     private static func candidateThemeManifestURLs() -> [URL] {

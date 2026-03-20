@@ -5,6 +5,7 @@
 //  Created by Codex on 2026/3/17.
 //
 
+import AppKit
 import Foundation
 import Testing
 @testable import FreeLook
@@ -90,6 +91,51 @@ struct SettingsStoreTests {
         }
 
         #expect(Settings.codeFontStack(for: "Not A Valid Font") == "monospace")
+    }
+
+    @Test func exposesThemeSurfaceMetadataFromManifest() {
+        let lightSurface = Settings.themeSurface(forDisplayName: "Ayu Light")
+        let darkSurface = Settings.themeSurface(forDisplayName: "Nord")
+
+        #expect(lightSurface?.background == "#fcfcfc")
+        #expect(lightSurface?.foreground == "#5c6166")
+        #expect(darkSurface?.background == "#2e3440")
+        #expect(darkSurface?.foreground == "#d8dee9")
+    }
+
+    @Test func resolvesPreviewSurfaceForEffectiveAppearance() {
+        let lightAppearance = NSAppearance(named: .aqua)!
+        let darkAppearance = NSAppearance(named: .darkAqua)!
+
+        let followSystemLight = Settings.previewSurface(
+            previewAppearanceMode: "Follow System",
+            lightTheme: "Ayu Light",
+            darkTheme: "Nord",
+            effectiveAppearance: lightAppearance
+        )
+        let followSystemDark = Settings.previewSurface(
+            previewAppearanceMode: "Follow System",
+            lightTheme: "Ayu Light",
+            darkTheme: "Nord",
+            effectiveAppearance: darkAppearance
+        )
+        let forcedLight = Settings.previewSurface(
+            previewAppearanceMode: "Always Light",
+            lightTheme: "Ayu Light",
+            darkTheme: "Nord",
+            effectiveAppearance: darkAppearance
+        )
+        let forcedDark = Settings.previewSurface(
+            previewAppearanceMode: "Always Dark",
+            lightTheme: "Ayu Light",
+            darkTheme: "Nord",
+            effectiveAppearance: lightAppearance
+        )
+
+        #expect(followSystemLight.background == "#fcfcfc")
+        #expect(followSystemDark.background == "#2e3440")
+        #expect(forcedLight.background == "#fcfcfc")
+        #expect(forcedDark.background == "#2e3440")
     }
 
     private func temporaryDefaults() -> UserDefaults {

@@ -47,13 +47,22 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     func preparePreviewOfFile(at url: URL) async throws {
+        let appearanceSnapshot = loadAppearanceSnapshot()
+
+        await MainActor.run {
+            applyPreviewSurface(
+                previewAppearanceMode: appearanceSnapshot.previewAppearanceMode,
+                lightTheme: appearanceSnapshot.lightTheme,
+                darkTheme: appearanceSnapshot.darkTheme
+            )
+        }
+
         let resourceValues = try url.resourceValues(forKeys: [.contentTypeKey])
         let contentType = resourceValues.contentType
         let languageIdentifier = UTIMapper.languageIdentifier(for: contentType, fileName: url.lastPathComponent)
 
         do {
             let preview = try FileLoader.loadPreview(for: url)
-            let appearanceSnapshot = loadAppearanceSnapshot()
 
             await MainActor.run {
                 loadPreviewHTML(
@@ -69,14 +78,14 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
                 )
             }
         } catch FileLoaderError.binaryContent {
-            let appearanceSnapshot = loadAppearanceSnapshot()
-
             await MainActor.run {
                 loadPreviewNoticeHTML(
                     fileURL: url,
                     fileName: url.lastPathComponent,
                     notice: "Binary file. Text preview is unavailable.",
                     previewAppearanceMode: appearanceSnapshot.previewAppearanceMode,
+                    lightTheme: appearanceSnapshot.lightTheme,
+                    darkTheme: appearanceSnapshot.darkTheme,
                     codeFontName: appearanceSnapshot.codeFontName,
                     codeFontSize: appearanceSnapshot.codeFontSize
                 )
@@ -89,6 +98,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     private func loadStateHTML(title: String, body: String) {
+        let appearanceSnapshot = loadAppearanceSnapshot()
         let content = """
         <section class="state-panel" role="status" aria-live="polite">
           <p class="state-title">\(escapeHTML(title))</p>
@@ -99,12 +109,23 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         let html = renderTemplate(
             pageTitle: title,
             bodyClass: .state,
-            bodyAppearance: "system",
-            bodyStyle: "",
+            bodyAppearance: previewAppearanceToken(for: appearanceSnapshot.previewAppearanceMode),
+            bodyStyle: makeBodyStyle(
+                codeFontName: appearanceSnapshot.codeFontName,
+                codeFontSize: appearanceSnapshot.codeFontSize,
+                previewAppearanceMode: appearanceSnapshot.previewAppearanceMode,
+                lightTheme: appearanceSnapshot.lightTheme,
+                darkTheme: appearanceSnapshot.darkTheme
+            ),
             notice: "",
             content: content
         )
 
+        applyPreviewSurface(
+            previewAppearanceMode: appearanceSnapshot.previewAppearanceMode,
+            lightTheme: appearanceSnapshot.lightTheme,
+            darkTheme: appearanceSnapshot.darkTheme
+        )
         loadRenderedHTML(html, baseURL: resourcesBaseURL())
     }
 
@@ -205,11 +226,22 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             pageTitle: fileName,
             bodyClass: .preview,
             bodyAppearance: previewAppearanceToken(for: previewAppearanceMode),
-            bodyStyle: makeBodyStyle(codeFontName: codeFontName, codeFontSize: codeFontSize),
+            bodyStyle: makeBodyStyle(
+                codeFontName: codeFontName,
+                codeFontSize: codeFontSize,
+                previewAppearanceMode: previewAppearanceMode,
+                lightTheme: lightTheme,
+                darkTheme: darkTheme
+            ),
             notice: "",
             content: content
         )
 
+        applyPreviewSurface(
+            previewAppearanceMode: previewAppearanceMode,
+            lightTheme: lightTheme,
+            darkTheme: darkTheme
+        )
         loadRenderedHTML(html, baseURL: previewBaseURL(for: fileURL))
     }
 
@@ -218,6 +250,8 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         fileName: String,
         notice: String,
         previewAppearanceMode: String,
+        lightTheme: String,
+        darkTheme: String,
         codeFontName: String,
         codeFontSize: Int
     ) {
@@ -232,11 +266,22 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             pageTitle: fileName,
             bodyClass: .preview,
             bodyAppearance: previewAppearanceToken(for: previewAppearanceMode),
-            bodyStyle: makeBodyStyle(codeFontName: codeFontName, codeFontSize: codeFontSize),
+            bodyStyle: makeBodyStyle(
+                codeFontName: codeFontName,
+                codeFontSize: codeFontSize,
+                previewAppearanceMode: previewAppearanceMode,
+                lightTheme: lightTheme,
+                darkTheme: darkTheme
+            ),
             notice: "",
             content: content
         )
 
+        applyPreviewSurface(
+            previewAppearanceMode: previewAppearanceMode,
+            lightTheme: lightTheme,
+            darkTheme: darkTheme
+        )
         loadRenderedHTML(html, baseURL: previewBaseURL(for: fileURL))
     }
 
@@ -345,9 +390,53 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         return (previewAppearanceMode, lightTheme, darkTheme, codeFontName, codeFontSize)
     }
 
-    private func makeBodyStyle(codeFontName: String, codeFontSize: Int) -> String {
+    private func makeBodyStyle(
+        codeFontName: String,
+        codeFontSize: Int,
+        previewAppearanceMode: String,
+        lightTheme: String,
+        darkTheme: String
+    ) -> String {
         let codeFontStack = Settings.codeFontStack(for: codeFontName)
-        return "--preview-code-font: \(codeFontStack); --preview-code-font-size: \(codeFontSize)px;"
+        let lightSurface = Settings.lightThemeSurface(forDisplayName: lightTheme)
+        let darkSurface = Settings.darkThemeSurface(forDisplayName: darkTheme)
+        let activeSurface = Settings.previewSurface(
+            previewAppearanceMode: previewAppearanceMode,
+            lightTheme: lightTheme,
+            darkTheme: darkTheme,
+            effectiveAppearance: view.effectiveAppearance
+        )
+
+        var declarations = [
+            "--preview-code-font: \(codeFontStack)",
+            "--preview-code-font-size: \(codeFontSize)px",
+        ]
+
+        if let background = lightSurface.background {
+            declarations.append("--preview-light-surface-bg: \(background)")
+        }
+
+        if let foreground = lightSurface.foreground {
+            declarations.append("--preview-light-surface-fg: \(foreground)")
+        }
+
+        if let background = darkSurface.background {
+            declarations.append("--preview-dark-surface-bg: \(background)")
+        }
+
+        if let foreground = darkSurface.foreground {
+            declarations.append("--preview-dark-surface-fg: \(foreground)")
+        }
+
+        if let background = activeSurface.background {
+            declarations.append("background: \(background)")
+        }
+
+        if let foreground = activeSurface.foreground {
+            declarations.append("color: \(foreground)")
+        }
+
+        return declarations.joined(separator: "; ") + ";"
     }
 
     private func previewAppearanceToken(for mode: String) -> String {
@@ -367,5 +456,73 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             .replacingOccurrences(of: "<", with: "&lt;")
             .replacingOccurrences(of: ">", with: "&gt;")
             .replacingOccurrences(of: "\"", with: "&quot;")
+    }
+
+    private func applyPreviewSurface(
+        previewAppearanceMode: String,
+        lightTheme: String,
+        darkTheme: String
+    ) {
+        let surface = Settings.previewSurface(
+            previewAppearanceMode: previewAppearanceMode,
+            lightTheme: lightTheme,
+            darkTheme: darkTheme,
+            effectiveAppearance: view.effectiveAppearance
+        )
+
+        guard let background = surface.background,
+              let backgroundColor = NSColor(cssHexString: background) else {
+            return
+        }
+
+        view.layer?.backgroundColor = backgroundColor.cgColor
+        webView.underPageBackgroundColor = backgroundColor
+    }
+}
+
+private extension NSColor {
+    convenience init?(cssHexString: String) {
+        let hex = cssHexString.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard hex.first == "#" else {
+            return nil
+        }
+
+        let normalized = String(hex.dropFirst())
+        let expandedHex: String
+
+        switch normalized.count {
+        case 3:
+            expandedHex = normalized.reduce(into: "") { partialResult, character in
+                partialResult.append(character)
+                partialResult.append(character)
+            }
+        case 6, 8:
+            expandedHex = normalized
+        default:
+            return nil
+        }
+
+        guard let value = UInt64(expandedHex, radix: 16) else {
+            return nil
+        }
+
+        let red: Double
+        let green: Double
+        let blue: Double
+        let alpha: Double
+
+        if expandedHex.count == 8 {
+            red = Double((value & 0xFF00_0000) >> 24) / 255
+            green = Double((value & 0x00FF_0000) >> 16) / 255
+            blue = Double((value & 0x0000_FF00) >> 8) / 255
+            alpha = Double(value & 0x0000_00FF) / 255
+        } else {
+            red = Double((value & 0xFF00_00) >> 16) / 255
+            green = Double((value & 0x00FF_00) >> 8) / 255
+            blue = Double(value & 0x0000_FF) / 255
+            alpha = 1
+        }
+
+        self.init(red: red, green: green, blue: blue, alpha: alpha)
     }
 }

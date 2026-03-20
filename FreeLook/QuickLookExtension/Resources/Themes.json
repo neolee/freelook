@@ -7,57 +7,101 @@
     {
       "id": "ayu-light",
       "displayName": "Ayu Light",
-      "appearance": "light"
+      "appearance": "light",
+      "surface": {
+        "background": "#fcfcfc",
+        "foreground": "#5c6166"
+      }
     },
     {
       "id": "github-light",
       "displayName": "GitHub Light",
-      "appearance": "light"
+      "appearance": "light",
+      "surface": {
+        "background": "#fff",
+        "foreground": "#24292e"
+      }
     },
     {
       "id": "one-light",
       "displayName": "One Light",
-      "appearance": "light"
+      "appearance": "light",
+      "surface": {
+        "background": "#FAFAFA",
+        "foreground": "#383A42"
+      }
     },
     {
       "id": "catppuccin-latte",
       "displayName": "Catppuccin Latte",
-      "appearance": "light"
+      "appearance": "light",
+      "surface": {
+        "background": "#eff1f5",
+        "foreground": "#4c4f69"
+      }
     },
     {
       "id": "everforest-light",
       "displayName": "Everforest Light",
-      "appearance": "light"
+      "appearance": "light",
+      "surface": {
+        "background": "#fdf6e3",
+        "foreground": "#5c6a72"
+      }
     },
     {
       "id": "ayu-dark",
       "displayName": "Ayu Dark",
-      "appearance": "dark"
+      "appearance": "dark",
+      "surface": {
+        "background": "#10141c",
+        "foreground": "#bfbdb6"
+      }
     },
     {
       "id": "github-dark",
       "displayName": "GitHub Dark",
-      "appearance": "dark"
+      "appearance": "dark",
+      "surface": {
+        "background": "#24292e",
+        "foreground": "#e1e4e8"
+      }
     },
     {
       "id": "one-dark-pro",
       "displayName": "One Dark Pro",
-      "appearance": "dark"
+      "appearance": "dark",
+      "surface": {
+        "background": "#282c34",
+        "foreground": "#abb2bf"
+      }
     },
     {
       "id": "catppuccin-mocha",
       "displayName": "Catppuccin Mocha",
-      "appearance": "dark"
+      "appearance": "dark",
+      "surface": {
+        "background": "#1e1e2e",
+        "foreground": "#cdd6f4"
+      }
     },
     {
       "id": "everforest-dark",
       "displayName": "Everforest Dark",
-      "appearance": "dark"
+      "appearance": "dark",
+      "surface": {
+        "background": "#2d353b",
+        "foreground": "#d3c6aa"
+      }
     },
     {
       "id": "nord",
       "displayName": "Nord",
-      "appearance": "dark"
+      "appearance": "dark",
+      "surface": {
+        "background": "#2e3440",
+        "foreground": "#d8dee9"
+      }
     }
   ]
 }

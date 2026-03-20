@@ -69,6 +69,7 @@ const THEME_MODULE_MAP = {
 };
 
 const THEME_NAME_MAP = Object.fromEntries(themeManifest.themes.map((theme) => [theme.displayName, theme.id]));
+const THEME_SURFACE_MAP = Object.fromEntries(themeManifest.themes.map((theme) => [theme.id, theme.surface ?? {}]));
 
 const SUPPORTED_SOURCE_LANGUAGES = [
   "bash",
@@ -295,6 +296,15 @@ function formatXMLDocument(content) {
 }
 
 function resolveThemeSurface(themeId) {
+  const manifestSurface = THEME_SURFACE_MAP[themeId];
+
+  if (manifestSurface?.background || manifestSurface?.foreground) {
+    return {
+      background: manifestSurface.background ?? null,
+      foreground: manifestSurface.foreground ?? null,
+    };
+  }
+
   const theme = THEME_MODULE_MAP[themeId];
   const colors = theme?.colors ?? {};
 
