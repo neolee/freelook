@@ -11,6 +11,7 @@ This directory contains committed sample files for design review, manual Quick L
 ## Current samples
 
 - `markdown_showcase.md` — Markdown and practical GFM review surface
+- `markdown_images.md` — Markdown image coverage for local relative paths and remote URLs
 - `valid.json` — prettified JSON baseline
 - `compact.json` — valid single-line JSON for prettify verification
 - `invalid.json` — invalid JSON fallback and warning state

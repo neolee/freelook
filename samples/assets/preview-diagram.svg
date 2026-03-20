@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="240" viewBox="0 0 640 240" role="img" aria-labelledby="title desc">
+  <title id="title">FreeLook relative image sample</title>
+  <desc id="desc">A simple diagram used to verify relative image loading inside Markdown previews.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f5f1e8"/>
+      <stop offset="100%" stop-color="#dbe7f5"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="240" rx="24" fill="url(#bg)"/>
+  <rect x="40" y="54" width="180" height="132" rx="18" fill="#1f4f9f" opacity="0.92"/>
+  <rect x="420" y="54" width="180" height="132" rx="18" fill="#234a3b" opacity="0.92"/>
+  <path d="M240 120H400" stroke="#17212c" stroke-width="10" stroke-linecap="round"/>
+  <path d="M390 98L422 120L390 142" fill="none" stroke="#17212c" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="130" y="116" text-anchor="middle" font-family="SF Pro Text, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#ffffff">Markdown</text>
+  <text x="130" y="148" text-anchor="middle" font-family="SF Pro Text, Helvetica, Arial, sans-serif" font-size="18" fill="#e8f0ff">./assets/...</text>
+  <text x="510" y="116" text-anchor="middle" font-family="SF Pro Text, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#ffffff">Renderer</text>
+  <text x="510" y="148" text-anchor="middle" font-family="SF Pro Text, Helvetica, Arial, sans-serif" font-size="18" fill="#e4f5ec">img src resolves here</text>
+</svg>

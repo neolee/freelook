@@ -78,12 +78,17 @@ struct FileLoaderTests {
     }
 
     private func temporaryFile(named fileName: String, data: Data) throws -> URL {
-        let directory = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let directory = try temporaryDirectory()
 
         let fileURL = directory.appendingPathComponent(fileName)
         try data.write(to: fileURL)
         return fileURL
+    }
+
+    private func temporaryDirectory() throws -> URL {
+        let directory = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
     }
 }

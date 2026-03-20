@@ -57,6 +57,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
 
             await MainActor.run {
                 loadPreviewHTML(
+                    fileURL: url,
                     fileName: url.lastPathComponent,
                     languageIdentifier: languageIdentifier,
                     preview: preview,
@@ -72,6 +73,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
 
             await MainActor.run {
                 loadPreviewNoticeHTML(
+                    fileURL: url,
                     fileName: url.lastPathComponent,
                     notice: "Binary file. Text preview is unavailable.",
                     previewAppearanceMode: appearanceSnapshot.previewAppearanceMode,
@@ -103,10 +105,11 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             content: content
         )
 
-        loadRenderedHTML(html)
+        loadRenderedHTML(html, baseURL: resourcesBaseURL())
     }
 
     private func loadPreviewHTML(
+        fileURL: URL,
         fileName: String,
         languageIdentifier: String,
         preview: FileLoadResult,
@@ -207,10 +210,11 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             content: content
         )
 
-        loadRenderedHTML(html)
+        loadRenderedHTML(html, baseURL: previewBaseURL(for: fileURL))
     }
 
     private func loadPreviewNoticeHTML(
+        fileURL: URL,
         fileName: String,
         notice: String,
         previewAppearanceMode: String,
@@ -233,7 +237,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             content: content
         )
 
-        loadRenderedHTML(html)
+        loadRenderedHTML(html, baseURL: previewBaseURL(for: fileURL))
     }
 
     private func renderTemplate(
@@ -260,6 +264,9 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             "{{BODY_CLASS}}": bodyClass.rawValue,
             "{{BODY_APPEARANCE}}": escapeHTML(bodyAppearance),
             "{{BODY_STYLE}}": escapeHTML(bodyStyle),
+            "{{MARKDOWN_STYLESHEET_URL}}": escapeHTML(resourceURLString(named: "github-markdown", withExtension: "css")),
+            "{{STYLESHEET_URL}}": escapeHTML(resourceURLString(named: "styles", withExtension: "css")),
+            "{{BUNDLE_SCRIPT_URL}}": escapeHTML(resourceURLString(named: "bundle", withExtension: "js")),
             "{{NOTICE}}": notice,
             "{{CONTENT}}": content,
         ]
@@ -271,8 +278,8 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         return template
     }
 
-    private func loadRenderedHTML(_ html: String) {
-        webView.loadHTMLString(html, baseURL: resourcesBaseURL())
+    private func loadRenderedHTML(_ html: String, baseURL: URL?) {
+        webView.loadHTMLString(html, baseURL: baseURL)
     }
 
     private func makeRenderPayloadJSON(
@@ -307,6 +314,14 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
 
     private func resourcesBaseURL() -> URL? {
         Bundle.main.resourceURL
+    }
+
+    private func previewBaseURL(for fileURL: URL) -> URL {
+        fileURL.deletingLastPathComponent()
+    }
+
+    private func resourceURLString(named name: String, withExtension fileExtension: String) -> String {
+        Bundle.main.url(forResource: name, withExtension: fileExtension)?.absoluteString ?? ""
     }
 
     private func loadAppearanceSnapshot() -> (previewAppearanceMode: String, lightTheme: String, darkTheme: String, codeFontName: String, codeFontSize: Int) {

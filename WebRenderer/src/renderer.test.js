@@ -133,6 +133,20 @@ describe("renderer bootstrap", () => {
     expect(typeof surface.lightBackground).toBe("string");
   });
 
+  test("preserves Markdown image sources", async () => {
+    const result = await renderPreview({
+      content: [
+        "![Relative asset](./assets/preview-diagram.svg)",
+        "",
+        "![Remote asset](https://upload.wikimedia.org/wikipedia/commons/4/48/Markdown-mark.svg)",
+      ].join("\n"),
+      lang: "markdown",
+    });
+
+    expect(result.html).toContain('<img src="./assets/preview-diagram.svg" alt="Relative asset">');
+    expect(result.html).toContain('<img src="https://upload.wikimedia.org/wikipedia/commons/4/48/Markdown-mark.svg" alt="Remote asset">');
+  });
+
   test("falls back to plain text for unsupported Markdown fences", async () => {
     const result = await renderPreview({
       content: [
