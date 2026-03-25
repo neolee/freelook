@@ -8,6 +8,14 @@
 import UniformTypeIdentifiers
 
 enum UTIMapper {
+    private static let filenameExtensionLanguageMap: [String: String] = [
+        "el": "elisp",
+        "cl": "lisp",
+        "l": "lisp",
+        "lisp": "lisp",
+        "lsp": "lisp",
+        "mud": "lisp",
+    ]
     private static let filenameLanguageMap: [String: String] = [
         "dockerfile": "dockerfile",
         "cmakelists.txt": "cmake",
@@ -60,7 +68,14 @@ enum UTIMapper {
         "org.yaml.yaml"
     )
     private static let tomlTypes = supportedTypes(
+        "public.toml",
         "io.toml"
+    )
+    private static let emacsLispTypes = supportedTypes(
+        "org.gnu.emacs-lisp"
+    )
+    private static let genericLispTypes = supportedTypes(
+        "com.macromates.textmate.lisp"
     )
     private static let sqlTypes = supportedTypes(
         "org.iso.sql",
@@ -179,6 +194,14 @@ enum UTIMapper {
             return "toml"
         }
 
+        if matches(contentType, anyOf: emacsLispTypes) {
+            return "elisp"
+        }
+
+        if matches(contentType, anyOf: genericLispTypes) {
+            return filenameExtensionLanguageIdentifier(forFileName: fileName) ?? "lisp"
+        }
+
         if matches(contentType, anyOf: sqlTypes) {
             return "sql"
         }
@@ -237,10 +260,27 @@ enum UTIMapper {
     }
 
     private static func fallbackLanguageIdentifier(forFileName fileName: String?) -> String {
+        if let languageIdentifier = filenameExtensionLanguageIdentifier(forFileName: fileName) {
+            return languageIdentifier
+        }
+
         guard let fileName else {
             return "text"
         }
 
         return filenameLanguageMap[fileName.lowercased()] ?? "text"
+    }
+
+    private static func filenameExtensionLanguageIdentifier(forFileName fileName: String?) -> String? {
+        guard let fileName else {
+            return nil
+        }
+
+        let `extension` = (fileName as NSString).pathExtension.lowercased()
+        guard !`extension`.isEmpty else {
+            return nil
+        }
+
+        return filenameExtensionLanguageMap[`extension`]
     }
 }

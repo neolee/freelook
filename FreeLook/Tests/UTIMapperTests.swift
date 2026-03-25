@@ -100,7 +100,14 @@ struct UTIMapperTests {
     }
 
     @Test func mapsTOML() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("public.toml")) == "toml")
         #expect(UTIMapper.languageIdentifier(for: UTType("io.toml")) == "toml")
+    }
+
+    @Test func mapsEmacsLisp() {
+        #expect(UTIMapper.languageIdentifier(for: UTType("org.gnu.emacs-lisp")) == "elisp")
+        #expect(UTIMapper.languageIdentifier(for: UTType("com.macromates.textmate.lisp"), fileName: "init.el") == "elisp")
+        #expect(UTIMapper.languageIdentifier(for: UTType("com.macromates.textmate.lisp"), fileName: "runtime.lisp") == "lisp")
     }
 
     @Test func mapsSQL() {

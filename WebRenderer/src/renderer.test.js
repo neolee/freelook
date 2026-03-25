@@ -29,6 +29,8 @@ describe("renderer bootstrap", () => {
     expect(normalizeLanguageName("toml")).toBe("toml");
     expect(normalizeLanguageName("sql")).toBe("sql");
     expect(normalizeLanguageName("dockerfile")).toBe("dockerfile");
+    expect(normalizeLanguageName("elisp")).toBe("elisp");
+    expect(normalizeLanguageName("lisp")).toBe("lisp");
     expect(normalizeLanguageName("makefile")).toBe("makefile");
     expect(normalizeLanguageName("cmake")).toBe("cmake");
     expect(normalizeLanguageName("text")).toBeNull();
@@ -59,6 +61,32 @@ describe("renderer bootstrap", () => {
     expect(html).toContain("const");
     expect(typeof surface.lightBackground).toBe("string");
     expect(typeof surface.darkBackground).toBe("string");
+  });
+
+  test("renders Emacs Lisp source code with Shiki", async () => {
+    const result = await renderPreview({
+      content: "(message \"hello\")\n",
+      lang: "elisp",
+      lightTheme: "GitHub Light",
+      darkTheme: "GitHub Dark",
+    });
+    const { html } = result;
+
+    expect(html).toContain("class=\"shiki");
+    expect(html).toContain("message");
+  });
+
+  test("renders Lisp source code with Shiki", async () => {
+    const result = await renderPreview({
+      content: "(defun square (x) (* x x))\n",
+      lang: "lisp",
+      lightTheme: "GitHub Light",
+      darkTheme: "GitHub Dark",
+    });
+    const { html } = result;
+
+    expect(html).toContain("class=\"shiki");
+    expect(html).toContain("defun");
   });
 
   test("returns the selected theme surface colors", async () => {

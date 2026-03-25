@@ -257,6 +257,47 @@ The current product conclusion is:
 - FreeLook should continue to handle `public.plain-text` correctly when the system routes it there,
 - but generic plain text is not treated as a guaranteed v1.0 ownership surface.
 
+### TOML regression after macOS 26.4
+
+On the current machine after the macOS/Xcode upgrade:
+
+- `UTType(filenameExtension: "toml") == public.toml`
+- the candidate set for `toml` is `["io.toml", "public.toml"]`
+- a real `.toml` file resolves to `public.toml`
+
+FreeLook's earlier v1.0 registration only claimed `io.toml`, and `public.toml` does not conform to `io.toml`.
+
+Practical implication:
+
+- the previous FreeLook TOML route was no longer sufficient once the system started preferring `public.toml`,
+- fixing TOML on the current machine requires claiming `public.toml` directly in `QLSupportedContentTypes`, and
+- `UTIMapper` must treat both `public.toml` and `io.toml` as TOML.
+
+The current machine also resolves `.cfg` and `.config` to `public.toml`. That is broader than the historical product intent, but it is now part of the system semantic surface for the same type. FreeLook accepts that broader coverage instead of introducing a product-owned TOML-only type.
+
+### Emacs Lisp support baseline
+
+On the current machine:
+
+- `UTType(filenameExtension: "el") == com.macromates.textmate.lisp`
+- the candidate set for `el` is `["com.macromates.textmate.lisp", "org.gnu.emacs-lisp", "org.n8gray.lisp"]`
+- a real `.el` file resolves to `com.macromates.textmate.lisp`
+- `org.gnu.emacs-lisp` is also present and is the semantically precise Emacs Lisp source type
+
+Practical implication:
+
+- supporting `.el` on the current machine requires claiming the compatibility type `com.macromates.textmate.lisp`,
+- FreeLook should also claim `org.gnu.emacs-lisp` because it is the precise semantic type that a cleaner machine may prefer, and
+- renderer support should use a real Emacs Lisp grammar rather than a generic plain-text fallback.
+
+Important caveat:
+
+- `com.macromates.textmate.lisp` is a broad TextMate-owned Lisp type whose tag set also includes non-Emacs Lisp extensions such as `.lisp`, `.cl`, and `.lsp`.
+- FreeLook should therefore not map that entire UTI blindly to Emacs Lisp.
+- The safe compatibility strategy is:
+  claim the broad UTI for routing on the current machine,
+  but disambiguate the renderer language by filename extension, using `elisp` for `.el` and `lisp` for the other Lisp-family extensions carried by that same UTI.
+
 ### Fixed-filename developer files
 
 Fixed-filename developer files such as `Dockerfile` and `CMakeLists.txt` exposed a different limitation:

@@ -76,7 +76,8 @@ These are not all “programming languages” in the narrow sense, but they fit 
 | Type | Shiki lang | Common extensions / filenames | Notes |
 |---|---|---|---|
 | YAML | `yaml` | `.yml`, `.yaml` | Support `public.yaml` and `org.yaml.yaml` |
-| TOML | `toml` | `.toml` | Support `io.toml` |
+| TOML | `toml` | `.toml`, `.cfg`, `.config` | Current macOS resolves these to `public.toml`; keep compatibility with legacy `io.toml` |
+| Emacs Lisp | `elisp` | `.el` | Support `org.gnu.emacs-lisp`; also claim `com.macromates.textmate.lisp` as the current-machine compatibility case, with filename-based disambiguation because that UTI also covers non-Emacs Lisp files |
 | SQL | `sql` | `.sql` | Support `org.iso.sql`; also claim `com.sequel-ace.sequel-ace.sql` as a compatibility case on the current machine |
 | Dockerfile | `dockerfile` | `Dockerfile` | Support via product-defined `net.paradigmx.dockerfile`, plus bounded fallback entry points for filename-only routing |
 | Makefile | `makefile` | `Makefile` | Support `public.make-source` |

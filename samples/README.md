@@ -41,6 +41,7 @@ This directory contains committed sample files for design review, manual Quick L
 - `example.go` — Go syntax highlighting sample
 - `example.hs` — Haskell syntax highlighting sample
 - `example.clj` — Clojure syntax highlighting sample
+- `example.el` — Emacs Lisp syntax highlighting sample
 - `example.sh` — shell syntax highlighting sample
 - `long-line.txt` — overflow and wrapping review sample
 

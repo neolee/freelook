@@ -227,6 +227,7 @@
 				<string>com.apple.property-list</string>
 				<string>com.apple.xcode.entitlements-property-list</string>
 				<string>com.apple.xml-property-list</string>
+				<string>com.macromates.textmate.lisp</string>
 				<string>com.microsoft.c-sharp</string>
 				<string>com.microsoft.typescript</string>
 				<string>com.netscape.javascript-source</string>
@@ -240,6 +241,7 @@
 				<string>net.paradigmx.dockerfile</string>
 				<string>net.paradigmx.edn-document</string>
 				<string>net.paradigmx.scala-script</string>
+				<string>org.gnu.emacs-lisp</string>
 				<string>org.clojure.script</string>
 				<string>org.cloture.cloture</string>
 				<string>org.golang.golang</string>
@@ -267,6 +269,7 @@
 				<string>public.objective-c-source</string>
 				<string>public.php-script</string>
 				<string>public.plain-text</string>
+				<string>public.toml</string>
 				<string>public.python-script</string>
 				<string>public.ruby-script</string>
 				<string>public.shell-script</string>

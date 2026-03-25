@@ -7,6 +7,7 @@ import cmakeLanguage from "shiki/dist/langs/cmake.mjs";
 import cssLanguage from "shiki/dist/langs/css.mjs";
 import csharpLanguage from "shiki/dist/langs/csharp.mjs";
 import dockerfileLanguage from "shiki/dist/langs/dockerfile.mjs";
+import elispLanguage from "shiki/dist/langs/elisp.mjs";
 import goLanguage from "shiki/dist/langs/go.mjs";
 import haskellLanguage from "shiki/dist/langs/haskell.mjs";
 import htmlLanguage from "shiki/dist/langs/html.mjs";
@@ -14,6 +15,7 @@ import javaLanguage from "shiki/dist/langs/java.mjs";
 import javascriptLanguage from "shiki/dist/langs/javascript.mjs";
 import jsonLanguage from "shiki/dist/langs/json.mjs";
 import kotlinLanguage from "shiki/dist/langs/kotlin.mjs";
+import lispLanguage from "shiki/dist/langs/lisp.mjs";
 import luaLanguage from "shiki/dist/langs/lua.mjs";
 import makefileLanguage from "shiki/dist/langs/makefile.mjs";
 import phpLanguage from "shiki/dist/langs/php.mjs";
@@ -78,6 +80,7 @@ const SUPPORTED_SOURCE_LANGUAGES = [
   "css",
   "csharp",
   "dockerfile",
+  "elisp",
   "go",
   "haskell",
   "html",
@@ -85,6 +88,7 @@ const SUPPORTED_SOURCE_LANGUAGES = [
   "javascript",
   "json",
   "kotlin",
+  "lisp",
   "lua",
   "makefile",
   "php",
@@ -107,6 +111,7 @@ const SOURCE_LANGUAGE_REGISTRATIONS = [
   cssLanguage,
   csharpLanguage,
   dockerfileLanguage,
+  elispLanguage,
   goLanguage,
   haskellLanguage,
   htmlLanguage,
@@ -114,6 +119,7 @@ const SOURCE_LANGUAGE_REGISTRATIONS = [
   javascriptLanguage,
   jsonLanguage,
   kotlinLanguage,
+  lispLanguage,
   luaLanguage,
   makefileLanguage,
   phpLanguage,
